@@ -1,0 +1,6 @@
+GET http://localhost:7880/api/observations HTTP/1.1
+
+###
+
+
+GET http://localhost:7880/favicon.ico
