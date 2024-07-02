@@ -1,5 +1,27 @@
-GET http://localhost:7880/api/observations HTTP/1.1
+@hostname = localhost
+@port = 7880
+@host = {{hostname}}:{{port}}
+
+// GETs Queries
+GET http://{{host}}/api/families HTTP/1.1
 ###
 
-GET http://localhost:7880/api/families HTTP/1.1
+GET http://{{host}}/api/subfamilies HTTP/1.1
+###
 
+GET http://{{host}}/api/tribes HTTP/1.1
+###
+
+GET http://{{host}}/api/genera HTTP/1.1
+###
+
+GET http://{{host}}/api/species HTTP/1.1
+###
+
+// POSTs Queries
+POST http://l{{host}}/api/families
+Content-Type: application/json
+
+{
+    "scientific_name": "Nueva Familia 2"
+}
