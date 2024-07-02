@@ -1,9 +1,20 @@
-pub mod observations;
-pub mod family;
+pub mod families;
+pub mod species;
+pub mod genera;
+pub mod subfamilies;
+pub mod tribes;
 
 use actix_web::web;
 
 pub fn config(cfg: &mut web::ServiceConfig) {
-    cfg.service(web::scope("/api").configure(observations::config));
-    cfg.service(web::scope("/api").configure(family::config));
+    // Usar un único scope para ambas configuraciones
+    cfg.service(
+        web::scope("/api")
+            .configure(families::config)
+            .configure(genera::config)
+            .configure(species::config)
+            .configure(subfamilies::config)
+            .configure(tribes::config)
+            
+    );
 }
