@@ -4,7 +4,15 @@ use log::{info, error};
 use crate::models::subfamily::{Subfamily, NewSubfamily};
 
 pub async fn get_subfamilies(pool: web::Data<PgPool>) -> HttpResponse {
-    match sqlx::query_as::<_, Subfamily>("SELECT id_subfamily, id_family, scientific_name FROM subfamily")
+    match sqlx::query_as::<_, Subfamily>("
+    SELECT
+        S.ID_SUBFAMILY,
+        S.SCIENTIFIC_NAME AS SUBFAMILY,
+        F.SCIENTIFIC_NAME AS FAMILY
+    FROM
+        SUBFAMILY S
+        JOIN family F ON S.ID_FAMILY = F.ID_FAMILY;
+    ")
         .fetch_all(pool.get_ref())
         .await {
             Ok(rows) => {
@@ -32,13 +40,14 @@ pub async fn create_subfamily(new_subfamily: web::Json<NewSubfamily>, pool: web:
     
     match result {
         Ok(row) => {
+            /* 
             let subfamily_response = Subfamily {
                 id_subfamily: row.id_subfamily,
                 id_family: new_subfamily.id_family,
                 scientific_name: new_subfamily.scientific_name,    
             };
-            info!("Successfully created subfamily: {:?}", subfamily_response);
-            HttpResponse::Created().json(subfamily_response)
+            info!("Successfully created subfamily: {:?}", subfamily_response);*/
+            HttpResponse::Created().json(row.id_subfamily)
         }
         Err(e) => {
             error!("Failed to create subfamily: {:?}", e);

@@ -4,8 +4,8 @@ use sqlx::FromRow;
 #[derive(FromRow, Serialize, Deserialize, Debug)]
 pub struct Species {
     pub id_species: i32,
-    pub id_genus: i32,
-    pub scientific_name: String,
+    pub species: String,
+    pub genus: String,
 
 }
 

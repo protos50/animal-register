@@ -4,7 +4,15 @@ use log::{info, error};
 use crate::models::genus::{Genus, NewGenus};
 
 pub async fn get_genera(pool: web::Data<PgPool>) -> HttpResponse {
-    match sqlx::query_as::<_, Genus>("SELECT id_genus, id_tribe, scientific_name FROM genus")
+    match sqlx::query_as::<_, Genus>("
+    SELECT
+        G.ID_GENUS,
+        G.SCIENTIFIC_NAME AS GENUS,
+        T.SCIENTIFIC_NAME AS TRIBE
+    FROM
+        GENUS G
+        JOIN TRIBE T ON G.ID_TRIBE = T.ID_TRIBE;
+    ")
         .fetch_all(pool.get_ref())
         .await {
             Ok(rows) => {
@@ -32,13 +40,14 @@ pub async fn create_genus(new_genus: web::Json<NewGenus>, pool: web::Data<PgPool
     
     match result {
         Ok(row) => {
+            /* 
             let genus_response = Genus {
                 id_genus: row.id_genus,
-                id_tribe: new_genus.id_tribe,
-                scientific_name: new_genus.scientific_name,    
+                genus: new_genus.id_tribe,
+                tribe: new_genus.scientific_name,    
             };
-            info!("Successfully created genus: {:?}", genus_response);
-            HttpResponse::Created().json(genus_response)
+            info!("Successfully created genus: {:?}", genus_response);*/
+            HttpResponse::Created().json(row.id_genus)
         }
         Err(e) => {
             error!("Failed to create genus: {:?}", e);

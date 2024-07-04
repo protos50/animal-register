@@ -3,6 +3,7 @@ pub mod species;
 pub mod genera;
 pub mod subfamilies;
 pub mod tribes;
+pub mod observations;
 
 use actix_web::web;
 
@@ -15,6 +16,6 @@ pub fn config(cfg: &mut web::ServiceConfig) {
             .configure(species::config)
             .configure(subfamilies::config)
             .configure(tribes::config)
-            
+            .configure(observations::config)
     );
 }

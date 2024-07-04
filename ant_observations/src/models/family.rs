@@ -4,7 +4,7 @@ use sqlx::FromRow;
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Family {
     pub id_family: i32,
-    pub scientific_name: String
+    pub family: String
 }
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]

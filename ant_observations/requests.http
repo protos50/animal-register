@@ -18,10 +18,49 @@ GET http://{{host}}/api/genera HTTP/1.1
 GET http://{{host}}/api/species HTTP/1.1
 ###
 
+GET http://{{host}}/api/observations HTTP/1.1
+###
+
 // POSTs Queries
-POST http://l{{host}}/api/families
+POST http://{{host}}/api/families
 Content-Type: application/json
 
 {
     "scientific_name": "Nueva Familia 2"
+}
+###
+
+POST http://{{host}}/api/tribes
+Content-Type: application/json
+
+{
+    "id_subfamily": 2,
+    "scientific_name": "Nueva Tribu 1"
+}
+###
+
+POST http://{{host}}/api/subfamilies
+Content-Type: application/json
+
+{
+    "id_family": 1,
+    "scientific_name": "Nueva Subfamilia 1"
+}
+###
+
+POST http://{{host}}/api/genera
+Content-Type: application/json
+
+{
+    "id_tribe": 4,
+    "scientific_name": "Nuevo Genero 1"
+}
+
+###
+POST http://{{host}}/api/species
+Content-Type: application/json
+
+{
+    "id_genus": 3,
+    "scientific_name": "Nueva Especie 1"
 }

@@ -4,7 +4,15 @@ use log::{info, error};
 use crate::models::tribe::{Tribe, NewTribe};
 
 pub async fn get_tribes(pool: web::Data<PgPool>) -> HttpResponse {
-    match sqlx::query_as::<_, Tribe>("SELECT id_tribe, id_subfamily, scientific_name FROM tribe")
+    match sqlx::query_as::<_, Tribe>("
+    SELECT
+        T.id_tribe,
+        T.SCIENTIFIC_NAME AS TRIBE,
+        S.SCIENTIFIC_NAME AS SUBFAMILY
+    FROM
+        TRIBE T
+        JOIN SUBFAMILY S ON T.ID_SUBFAMILY = S.ID_SUBFAMILY;
+    ")
         .fetch_all(pool.get_ref())
         .await {
             Ok(rows) => {
@@ -32,13 +40,14 @@ pub async fn create_tribe(new_tribe: web::Json<NewTribe>, pool: web::Data<PgPool
     
     match result {
         Ok(row) => {
+            /* 
             let tribe_response = Tribe {
                 id_tribe: row.id_tribe,
                 id_subfamily: new_tribe.id_subfamily,
                 scientific_name: new_tribe.scientific_name,    
             };
-            info!("Successfully created tribe: {:?}", tribe_response);
-            HttpResponse::Created().json(tribe_response)
+            info!("Successfully created tribe: {:?}", tribe_response);*/
+            HttpResponse::Created().json(row.id_tribe)
         }
         Err(e) => {
             error!("Failed to create tribe: {:?}", e);

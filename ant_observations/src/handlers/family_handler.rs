@@ -4,7 +4,13 @@ use log::{info, error};
 use crate::models::family::{Family, NewFamily};
 
 pub async fn get_families(pool: web::Data<PgPool>) -> HttpResponse {
-    match sqlx::query_as::<_, Family>("SELECT id_family, scientific_name FROM family")
+    match sqlx::query_as::<_, Family>("
+    SELECT
+        F.ID_FAMILY,
+        F.SCIENTIFIC_NAME AS FAMILY
+    FROM
+        FAMILY F;
+    ")
         .fetch_all(pool.get_ref())
         .await {
             Ok(rows) => {
@@ -34,7 +40,7 @@ pub async fn create_family(new_family: web::Json<NewFamily>, pool: web::Data<PgP
         Ok(row) => {
             let family_response = Family {
                 id_family: row.id_family,
-                scientific_name: new_family.scientific_name,    
+                family: new_family.scientific_name,    
             };
             info!("Successfully created family: {:?}", family_response);
             HttpResponse::Created().json(family_response)

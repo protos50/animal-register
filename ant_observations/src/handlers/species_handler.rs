@@ -4,7 +4,15 @@ use log::{info, error};
 use crate::models::species::{Species, NewSpecies};
 
 pub async fn get_species(pool: web::Data<PgPool>) -> HttpResponse {
-    match sqlx::query_as::<_, Species>("SELECT id_species, id_genus, scientific_name FROM species")
+    match sqlx::query_as::<_, Species>("
+    SELECT
+        E.ID_SPECIES,
+        E.SCIENTIFIC_NAME AS SPECIES,
+        G.SCIENTIFIC_NAME AS GENUS
+    FROM
+        SPECIES E
+        JOIN GENUS G ON E.ID_GENUS = G.ID_GENUS;
+    ")
         .fetch_all(pool.get_ref())
         .await {
             Ok(rows) => {
@@ -32,13 +40,14 @@ pub async fn create_species(new_species: web::Json<NewSpecies>, pool: web::Data<
     
     match result {
         Ok(row) => {
+            /*
             let species_response = Species {
                 id_species: row.id_species,
                 id_genus: new_species.id_genus,
                 scientific_name: new_species.scientific_name,    
             };
-            info!("Successfully created species: {:?}", species_response);
-            HttpResponse::Created().json(species_response)
+            info!("Successfully created species: {:?}", species_response); */
+            HttpResponse::Created().json(row.id_species)
         }
         Err(e) => {
             error!("Failed to create species: {:?}", e);

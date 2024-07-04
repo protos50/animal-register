@@ -1,4 +1,5 @@
-use actix_web::{web, App, HttpServer};
+use actix_web::{web, App, HttpServer, HttpResponse};
+use actix_files::Files;
 use dotenv::dotenv;
 use sqlx::postgres::PgPoolOptions;
 use std::env;
@@ -27,6 +28,8 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(web::Data::new(pool.clone()))
             .configure(routes::config)
+            // Servir archivos estáticos desde el directorio build de React
+            .service(Files::new("/", "../front_application/build").index_file("index.html"))
     })
     .bind(("0.0.0.0", port))?
     .run()
