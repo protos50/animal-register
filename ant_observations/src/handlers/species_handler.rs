@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse};
 use sqlx::PgPool;
 use log::{info, error};
-use crate::models::species::{Species, NewSpecies};
+use crate::models::species::{Species, NewSpecies, SimpleSpecies};
 
 pub async fn get_species(pool: web::Data<PgPool>) -> HttpResponse {
     match sqlx::query_as::<_, Species>("
@@ -25,6 +25,24 @@ pub async fn get_species(pool: web::Data<PgPool>) -> HttpResponse {
             },  
         }
 }
+
+pub async fn get_simple_species(pool: web::Data<PgPool>) -> HttpResponse {
+    match sqlx::query_as::<_, SimpleSpecies>(
+        "SELECT id_species, scientific_name FROM species"
+    )
+    .fetch_all(pool.get_ref())
+    .await {
+        Ok(rows) => {
+            info!("Successfully fetched {} species", rows.len());
+            HttpResponse::Ok().json(rows)
+        },
+        Err(e) => {
+            error!("Failed to fetch species: {:?}", e);
+            HttpResponse::InternalServerError().finish()
+        }
+    }
+}
+
 
 // Handler para crear una nuevo genero
 pub async fn create_species(new_species: web::Json<NewSpecies>, pool: web::Data<PgPool>) -> HttpResponse {

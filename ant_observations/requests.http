@@ -18,6 +18,9 @@ GET http://{{host}}/api/genera HTTP/1.1
 GET http://{{host}}/api/species HTTP/1.1
 ###
 
+GET http://{{host}}/api/simple_species HTTP/1.1
+###
+
 GET http://{{host}}/api/observations HTTP/1.1
 ###
 
@@ -64,3 +67,12 @@ Content-Type: application/json
     "id_genus": 3,
     "scientific_name": "Nueva Especie 1"
 }
+###
+
+POST http://{{host}}/api/observations
+Content-Type: application/json
+
+{
+    "id_species": 1
+}
+###

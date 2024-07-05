@@ -9,6 +9,12 @@ pub struct Species {
 
 }
 
+#[derive(Debug, Serialize, Deserialize, FromRow)]
+pub struct SimpleSpecies {
+    pub id_species: i32,
+    pub scientific_name: String,
+}
+
 #[derive(FromRow, Serialize, Deserialize, Debug)]
 pub struct NewSpecies {
     pub id_genus: i32,

@@ -1,33 +1,8 @@
 use actix_web::{web, HttpResponse};
 use sqlx::PgPool;
 use log::{info, error};
-use crate::models::observation::Observations;
-/* 
-pub async fn get_species_with_relations(pool: web::Data<PgPool>) -> impl Responder {
-    let result = sqlx::query_as!(
-        SpeciesWithRelations,
-        r#"
-        SELECT e.scientific_name AS species, 
-               g.scientific_name AS genus, 
-               t.scientific_name AS tribe, 
-               s.scientific_name AS subfamily, 
-               f.scientific_name AS family
-        FROM species e
-        JOIN genus g ON e.id_genus = g.id_genus
-        JOIN tribe t ON g.id_tribe = t.id_tribe
-        JOIN subfamily s ON t.id_subfamily = s.id_subfamily
-        JOIN family f ON s.id_family = f.id_family;
-        "#
-    )
-    .fetch_all(pool.get_ref())
-    .await;
+use crate::models::observation::{NewObservation, Observations};
 
-    match result {
-        Ok(rows) => HttpResponse::Ok().json(rows),
-        Err(_) => HttpResponse::InternalServerError().finish(),
-    }
-}
-*/
 pub async fn get_observations(pool: web::Data<PgPool>) -> HttpResponse {
     match sqlx::query_as::<_, Observations>("
     SELECT
@@ -56,4 +31,27 @@ pub async fn get_observations(pool: web::Data<PgPool>) -> HttpResponse {
                 HttpResponse::InternalServerError().finish()
             },  
         }
+}
+
+pub async fn create_observation(new_observation: web::Json<NewObservation>, pool: web::Data<PgPool>) -> HttpResponse {
+    let new_observation: NewObservation = new_observation.into_inner(); // Convertir de web::Json a Family
+    
+    // Ejecutar la inserción en la base de datos
+    let result = sqlx::query!(
+        "INSERT INTO observation (id_species) VALUES ($1) RETURNING id_observation",
+        new_observation.id_species
+    )
+    .fetch_one(pool.get_ref())
+    .await;
+    
+    match result {
+        Ok(row) => {
+            info!("Successfully created species: {:?}", row); 
+            HttpResponse::Created().json(row.id_observation)
+        }
+        Err(e) => {
+            error!("Failed to create observation: {:?}", e);
+            HttpResponse::InternalServerError().finish()
+        }
+    }
 }

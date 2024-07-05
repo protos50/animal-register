@@ -10,3 +10,8 @@ pub struct Observations {
     pub subfamily: String,
     pub family: String,
 }
+
+#[derive(Debug, Serialize, Deserialize, FromRow)]
+pub struct NewObservation {
+    pub id_species: i32,
+}

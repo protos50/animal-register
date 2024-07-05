@@ -3,6 +3,7 @@ import axios from 'axios';
 import Observations from './components/Observations';
 import TableView from './components/TableView';
 import AddRecordForm from './components/AddRecordForm';
+import CreateObservationForm from './components/CreateObservationForm';
 
 const App = () => {
     const [selectedTable, setSelectedTable] = useState('');
@@ -48,6 +49,9 @@ const App = () => {
         <div>
             <h1>Ant Observations</h1>
             <Observations />
+
+            <h2>Create New Observation</h2>
+            <CreateObservationForm />
 
             <h2>View and Add Records</h2>
             <select onChange={handleTableSelection}>
