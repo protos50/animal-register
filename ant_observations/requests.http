@@ -24,6 +24,13 @@ GET http://{{host}}/api/simple_species HTTP/1.1
 GET http://{{host}}/api/observations HTTP/1.1
 ###
 
+GET http://{{host}}/api/localities HTTP/1.1
+###
+
+GET http://{{host}}/api/simple_localities HTTP/1.1
+###
+
+
 // POSTs Queries
 POST http://{{host}}/api/families
 Content-Type: application/json

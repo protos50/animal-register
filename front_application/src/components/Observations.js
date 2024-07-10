@@ -10,7 +10,11 @@ const columns = [
   { field: 'tribe', headerName: 'Tribe', width: 150 },
   { field: 'subfamily', headerName: 'Subfamily', width: 150 },
   { field: 'family', headerName: 'Family', width: 150 },
+  { field: 'locality', headerName: 'Locality', width: 150 },
+  { field: 'department', headerName: 'Department', width: 150 },
+  { field: 'province', headerName: 'Province', width: 150 },
 ];
+
 
 const Observations = () => {
   const [observations, setObservations] = React.useState([]);
@@ -27,7 +31,7 @@ const Observations = () => {
       .catch(error => console.error('Error fetching observations:', error));
   }, []);
 
-  return (
+  return (  
     <Box sx={{ height: 400, width: '100%' }}>
       <DataGrid
         rows={observations}
@@ -37,7 +41,7 @@ const Observations = () => {
         rowsPerPageOptions={[5]}
         checkboxSelection
         disableSelectionOnClick
-      />
+        />
     </Box>
   );
 };

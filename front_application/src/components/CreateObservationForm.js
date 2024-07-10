@@ -3,7 +3,9 @@ import axios from 'axios';
 
 const CreateObservationForm = () => {
     const [species, setSpecies] = useState([]);
+    const [localities, setLocalities] = useState([]);
     const [selectedSpecies, setSelectedSpecies] = useState('');
+    const [selectedLocality, setSelectedLocality] = useState('');
 
     useEffect(() => {
         // Obtener todas las especies del servidor
@@ -14,8 +16,17 @@ const CreateObservationForm = () => {
             .catch(error => {
                 console.error("Error fetching species:", error);
             });
+
+        axios.get('/api/simple_localities')
+            .then(response => {
+                setLocalities(response.data);
+            })
+            .catch(error => {
+                console.error("Error fetching localities:", error);
+            });
+
     }, []);
-    
+
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -24,9 +35,14 @@ const CreateObservationForm = () => {
             alert("Please select a species");
             return;
         }
+        if (!selectedLocality) {
+            alert("Please select a locality");
+            return;
+        }
 
         const newObservation = {
             id_species: parseInt(selectedSpecies, 10), // Convertir a entero base 10 el valor selectedSpecies
+            id_locality: parseInt(selectedLocality, 10)
         };
 
         // Realizar la solicitud POST para crear la nueva observación
@@ -48,6 +64,17 @@ const CreateObservationForm = () => {
                     {species.map(species => (
                         <option key={species.id_species} value={species.id_species}>
                             {species.scientific_name}
+                        </option>
+                    ))}
+                </select>
+            </label>
+            <label>
+                Locality:
+                <select value={selectedLocality} onChange={(e) => setSelectedLocality(e.target.value)}>
+                    <option value="">Select a locality</option>
+                    {localities.map(locality => (
+                        <option key={locality.id_locality} value={locality.id_locality}>
+                            {locality.locality_name}
                         </option>
                     ))}
                 </select>

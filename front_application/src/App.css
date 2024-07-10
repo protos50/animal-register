@@ -1,38 +1,29 @@
-.App {
-  text-align: center;
+/* Aplica un fondo oscuro a todo el cuerpo del documento */
+body {
+    background-color: #121212;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* Ajustar el color de enlaces si los tienes */
+a {
+    color: #1e90ff;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/* Estilos adicionales para asegurarse de que los elementos de formulario se vean bien en fondo oscuro */
+input, textarea, select {
+    background-color: #333;
+    color: #ffffff;
+    border: 1px solid #555;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+button {
+    background-color: #444;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+button:hover {
+    background-color: #555;
 }

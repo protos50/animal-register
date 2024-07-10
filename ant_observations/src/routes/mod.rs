@@ -4,11 +4,14 @@ pub mod genera;
 pub mod subfamilies;
 pub mod tribes;
 pub mod observations;
+pub mod localities;
+pub mod departments;
 
 use actix_web::web;
 
+use crate::models::department;
+
 pub fn config(cfg: &mut web::ServiceConfig) {
-    // Usar un único scope para ambas configuraciones
     cfg.service(
         web::scope("/api")
             .configure(families::config)
@@ -17,5 +20,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
             .configure(subfamilies::config)
             .configure(tribes::config)
             .configure(observations::config)
+            .configure(localities::config)
+            .configure(departments::config)
     );
 }
