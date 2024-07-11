@@ -15,6 +15,12 @@ pub struct Observations {
 }
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]
+pub struct PaginationParams {
+    pub limit: i32,
+    pub offset: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct NewObservation {
     pub id_species: i32,
     pub id_locality: i32,

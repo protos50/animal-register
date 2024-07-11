@@ -1,14 +1,25 @@
-use actix_web::{web, HttpResponse};
+use actix_web::{web, HttpResponse, Error};
 use sqlx::PgPool;
 use log::{info, error};
-use crate::models::observation::{NewObservation, Observations};
+use csv::Writer;
+use crate::models::observation::{NewObservation, Observations, PaginationParams};
 
-pub async fn get_observations(pool: web::Data<PgPool>) -> HttpResponse {
-    match sqlx::query_as::<_, Observations>("
-        SELECT * FROM get_observations()
-    ")
+
+pub async fn get_observations(
+    pool: web::Data<PgPool>,
+    pagination: web::Query<PaginationParams>,
+) -> HttpResponse {
+    let pagination_params = pagination.into_inner();
+
+    let result = sqlx::query_as::<_, Observations>(
+        "SELECT * FROM public.get_observations($1, $2)",
+    )
+    .bind(pagination_params.limit)
+    .bind(pagination_params.offset)
     .fetch_all(pool.get_ref())
-    .await {
+    .await;
+
+    match result {
         Ok(rows) => {
             info!("Successfully fetched {} observations", rows.len());
             HttpResponse::Ok().json(rows)
@@ -39,6 +50,34 @@ pub async fn create_observation(new_observation: web::Json<NewObservation>, pool
         Err(e) => {
             error!("Failed to create observation: {:?}", e);
             HttpResponse::InternalServerError().finish()
+        }
+    }
+}
+
+pub async fn download_observations_csv(
+    pool: web::Data<PgPool>,
+) -> Result<HttpResponse, Error> {
+    let result = sqlx::query_as::<_, Observations>(
+        "SELECT * FROM public.get_observations(-1, -1)"
+    )
+    .fetch_all(pool.get_ref())
+    .await;
+
+    match result {
+        Ok(rows) => {
+            let mut wtr = csv::Writer::from_writer(vec![]);
+            for row in rows {
+                wtr.serialize(row).unwrap();
+            }
+            let data = wtr.into_inner().unwrap();
+            Ok(HttpResponse::Ok()
+                .content_type("text/csv")
+                .append_header(("Content-Disposition", "attachment; filename=\"observations.csv\""))
+                .body(data))
+        }
+        Err(e) => {
+            error!("Failed to fetch observations: {:?}", e);
+            Ok(HttpResponse::InternalServerError().finish())
         }
     }
 }
