@@ -30,6 +30,14 @@ GET http://{{host}}/api/localities HTTP/1.1
 GET http://{{host}}/api/simple_localities HTTP/1.1
 ###
 
+GET http://{{host}}/api/provinces HTTP/1.1
+###
+
+GET http://{{host}}/api/simple_provinces HTTP/1.1
+###
+
+GET http://{{host}}/api/countries HTTP/1.1
+###
 
 // POSTs Queries
 POST http://{{host}}/api/families

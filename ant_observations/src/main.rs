@@ -1,4 +1,4 @@
-use actix_web::{web, App, HttpServer, HttpResponse};
+use actix_web::{web, App, HttpServer};
 use actix_files::Files;
 use dotenv::dotenv;
 use sqlx::postgres::PgPoolOptions;

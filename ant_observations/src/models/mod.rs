@@ -6,3 +6,5 @@ pub mod tribe;
 pub mod observation;
 pub mod locality;
 pub mod department;
+pub mod province;
+pub mod country;

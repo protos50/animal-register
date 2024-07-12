@@ -31,7 +31,7 @@ pub async fn create_localities(new_locality: web::Json<NewLocality>, pool: web::
     
     // Ejecutar la inserción en la base de datos
     let result = sqlx::query!(
-        "INSERT INTO LOCALITY (ID_LOCALITY, LOCALITY_NAME) VALUES ($1, $2) RETURNING ID_LOCALITY",
+        "INSERT INTO LOCALITY (ID_DEPARTMENT, LOCALITY_NAME) VALUES ($1, $2) RETURNING ID_LOCALITY",
         new_locality.id_department, new_locality.locality_name
     )
     .fetch_one(pool.get_ref())
