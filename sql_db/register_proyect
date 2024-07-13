@@ -1,0 +1,79 @@
+-- Create the Family table
+CREATE TABLE Family (
+    id_family SERIAL,
+    scientific_name TEXT NOT NULL,
+    CONSTRAINT pk_family PRIMARY KEY (id_family)
+);
+
+-- Create the Subfamily table
+CREATE TABLE Subfamily (
+    id_subfamily SERIAL,
+    id_family INTEGER NOT NULL,
+    scientific_name TEXT NOT NULL,
+    CONSTRAINT fk_subfamily_family FOREIGN KEY (id_family) REFERENCES Family(id_family),
+    CONSTRAINT pk_subfamily PRIMARY KEY (id_subfamily)
+);
+
+-- Create the Tribe table
+CREATE TABLE Tribe (
+    id_tribe SERIAL,
+    id_subfamily INTEGER NOT NULL,
+    scientific_name TEXT NOT NULL,
+    CONSTRAINT fk_tribe_subfamily FOREIGN KEY (id_subfamily) REFERENCES Subfamily(id_subfamily),
+    CONSTRAINT pk_tribe PRIMARY KEY (id_tribe)
+);
+
+-- Create the Genus table
+CREATE TABLE Genus (
+    id_genus SERIAL,
+    id_tribe INTEGER NOT NULL,
+    scientific_name TEXT NOT NULL,
+    CONSTRAINT fk_genus_tribe FOREIGN KEY (id_tribe) REFERENCES Tribe(id_tribe),
+    CONSTRAINT pk_genus PRIMARY KEY (id_genus)
+);
+
+-- Create the Species table
+CREATE TABLE Species (
+    id_species SERIAL,
+    id_genus INTEGER NOT NULL,
+    scientific_name TEXT NOT NULL,
+    CONSTRAINT fk_species_genus FOREIGN KEY (id_genus) REFERENCES Genus(id_genus),
+    CONSTRAINT pk_species PRIMARY KEY (id_species)
+);
+
+CREATE TABLE observation (
+    id_observation SERIAL,
+    id_species INTEGER NOT NULL,
+	CONSTRAINT fk_observation_species FOREIGN KEY (id_species) REFERENCES species(id_species),
+    CONSTRAINT pk_observation PRIMARY KEY (id_observation)
+);
+
+
+-- Insert the family
+INSERT INTO Family (scientific_name) VALUES ('Formicidae') RETURNING id_family;
+
+-- Insert the subfamilies
+INSERT INTO Subfamily (id_family, scientific_name) VALUES ((SELECT id_family FROM Family WHERE scientific_name = 'Formicidae'), 'Amblyoponinae') RETURNING id_subfamily;
+INSERT INTO Subfamily (id_family, scientific_name) VALUES ((SELECT id_family FROM Family WHERE scientific_name = 'Formicidae'), 'Ponerinae') RETURNING id_subfamily;
+INSERT INTO Subfamily (id_family, scientific_name) VALUES ((SELECT id_family FROM Family WHERE scientific_name = 'Formicidae'), 'Myrmicinae') RETURNING id_subfamily;
+
+-- Insert the tribes
+INSERT INTO Tribe (id_subfamily, scientific_name) VALUES ((SELECT id_subfamily FROM Subfamily WHERE scientific_name = 'Amblyoponinae'), 'Amblyoponini') RETURNING id_tribe;
+INSERT INTO Tribe (id_subfamily, scientific_name) VALUES ((SELECT id_subfamily FROM Subfamily WHERE scientific_name = 'Ponerinae'), 'Ponerini') RETURNING id_tribe;
+INSERT INTO Tribe (id_subfamily, scientific_name) VALUES ((SELECT id_subfamily FROM Subfamily WHERE scientific_name = 'Myrmicinae'), 'Attini') RETURNING id_tribe;
+INSERT INTO Tribe (id_subfamily, scientific_name) VALUES ((SELECT id_subfamily FROM Subfamily WHERE scientific_name = 'Myrmicinae'), 'Solenopsidini') RETURNING id_tribe;
+
+-- Insert the genera
+INSERT INTO Genus (id_tribe, scientific_name) VALUES ((SELECT id_tribe FROM Tribe WHERE scientific_name = 'Amblyoponini'), 'Prionopelta') RETURNING id_genus;
+INSERT INTO Genus (id_tribe, scientific_name) VALUES ((SELECT id_tribe FROM Tribe WHERE scientific_name = 'Ponerini'), 'Hypoponera') RETURNING id_genus;
+INSERT INTO Genus (id_tribe, scientific_name) VALUES ((SELECT id_tribe FROM Tribe WHERE scientific_name = 'Attini'), 'Octostruma') RETURNING id_genus;
+INSERT INTO Genus (id_tribe, scientific_name) VALUES ((SELECT id_tribe FROM Tribe WHERE scientific_name = 'Solenopsidini'), 'Solenopsis') RETURNING id_genus;
+
+-- Insert the species
+INSERT INTO Species (id_genus, scientific_name) VALUES ((SELECT id_genus FROM Genus WHERE scientific_name = 'Prionopelta'), 'Prionopelta punctulata');
+INSERT INTO Species (id_genus, scientific_name) VALUES ((SELECT id_genus FROM Genus WHERE scientific_name = 'Hypoponera'), 'Hypoponera sp1');
+INSERT INTO Species (id_genus, scientific_name) VALUES ((SELECT id_genus FROM Genus WHERE scientific_name = 'Octostruma'), 'Octostruma balzani');
+INSERT INTO Species (id_genus, scientific_name) VALUES ((SELECT id_genus FROM Genus WHERE scientific_name = 'Solenopsis'), 'Solenopsis sp1');
+
+
+

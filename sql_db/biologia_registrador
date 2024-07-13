@@ -1,0 +1,122 @@
+-- Create the Familia table
+CREATE TABLE Familia (
+    id_familia SERIAL,
+    nombre_cientifico TEXT NOT NULL,
+    CONSTRAINT pk_familia PRIMARY KEY (id_familia)
+);
+
+-- Create the Subfamilia table
+CREATE TABLE Subfamilia (
+    id_subfamilia SERIAL,
+    id_familia INTEGER NOT NULL,
+    nombre_cientifico TEXT NOT NULL,
+    CONSTRAINT fk_subfamilia_familia FOREIGN KEY (id_familia) REFERENCES Familia(id_familia),
+    CONSTRAINT pk_subfamilia PRIMARY KEY (id_subfamilia)
+);
+
+-- Create the Tribu table
+CREATE TABLE Tribu (
+    id_tribu SERIAL,
+    id_subfamilia INTEGER NOT NULL,
+    nombre_cientifico TEXT NOT NULL,
+    CONSTRAINT fk_tribu_subfamilia FOREIGN KEY (id_subfamilia) REFERENCES Subfamilia(id_subfamilia),
+    CONSTRAINT pk_tribu PRIMARY KEY (id_tribu)
+);
+
+-- Create the Genero table
+CREATE TABLE Genero (
+    id_genero SERIAL,
+    id_tribu INTEGER NOT NULL,
+    nombre_cientifico TEXT NOT NULL,
+    CONSTRAINT fk_genero_tribu FOREIGN KEY (id_tribu) REFERENCES Tribu(id_tribu),
+    CONSTRAINT pk_genero PRIMARY KEY (id_genero)
+);
+
+-- Create the Especie table
+CREATE TABLE Especie (
+    id_especie SERIAL,
+    id_genero INTEGER NOT NULL,
+    nombre_cientifico TEXT NOT NULL,
+    CONSTRAINT fk_especie_genero FOREIGN KEY (id_genero) REFERENCES Genero(id_genero),
+    CONSTRAINT pk_especie PRIMARY KEY (id_especie)
+);
+
+
+-- Insertar la familia
+INSERT INTO Familia (nombre_cientifico) VALUES ('Formicidae') RETURNING id_familia;
+
+-- Insertar las subfamilias
+INSERT INTO Subfamilia (id_familia, nombre_cientifico) VALUES ((SELECT id_familia FROM Familia WHERE nombre_cientifico = 'Formicidae'), 'Amblyoponinae') RETURNING id_subfamilia;
+INSERT INTO Subfamilia (id_familia, nombre_cientifico) VALUES ((SELECT id_familia FROM Familia WHERE nombre_cientifico = 'Formicidae'), 'Ponerinae') RETURNING id_subfamilia;
+INSERT INTO Subfamilia (id_familia, nombre_cientifico) VALUES ((SELECT id_familia FROM Familia WHERE nombre_cientifico = 'Formicidae'), 'Myrmicinae') RETURNING id_subfamilia;
+
+-- Insertar las tribus
+INSERT INTO Tribu (id_subfamilia, nombre_cientifico) VALUES ((SELECT id_subfamilia FROM Subfamilia WHERE nombre_cientifico = 'Amblyoponinae'), 'Amblyoponini') RETURNING id_tribu;
+INSERT INTO Tribu (id_subfamilia, nombre_cientifico) VALUES ((SELECT id_subfamilia FROM Subfamilia WHERE nombre_cientifico = 'Ponerinae'), 'Ponerini') RETURNING id_tribu;
+INSERT INTO Tribu (id_subfamilia, nombre_cientifico) VALUES ((SELECT id_subfamilia FROM Subfamilia WHERE nombre_cientifico = 'Myrmicinae'), 'Attini') RETURNING id_tribu;
+INSERT INTO Tribu (id_subfamilia, nombre_cientifico) VALUES ((SELECT id_subfamilia FROM Subfamilia WHERE nombre_cientifico = 'Myrmicinae'), 'Solenopsidini') RETURNING id_tribu;
+
+-- Insertar los géneros
+INSERT INTO Genero (id_tribu, nombre_cientifico) VALUES ((SELECT id_tribu FROM Tribu WHERE nombre_cientifico = 'Amblyoponini'), 'Prionopelta') RETURNING id_genero;
+INSERT INTO Genero (id_tribu, nombre_cientifico) VALUES ((SELECT id_tribu FROM Tribu WHERE nombre_cientifico = 'Ponerini'), 'Hypoponera') RETURNING id_genero;
+INSERT INTO Genero (id_tribu, nombre_cientifico) VALUES ((SELECT id_tribu FROM Tribu WHERE nombre_cientifico = 'Attini'), 'Octostruma') RETURNING id_genero;
+INSERT INTO Genero (id_tribu, nombre_cientifico) VALUES ((SELECT id_tribu FROM Tribu WHERE nombre_cientifico = 'Solenopsidini'), 'Solenopsis') RETURNING id_genero;
+
+-- Insertar las especies
+INSERT INTO Especie (id_genero, nombre_cientifico) VALUES ((SELECT id_genero FROM Genero WHERE nombre_cientifico = 'Prionopelta'), 'Prionopelta punctulata');
+INSERT INTO Especie (id_genero, nombre_cientifico) VALUES ((SELECT id_genero FROM Genero WHERE nombre_cientifico = 'Hypoponera'), 'Hypoponera sp1');
+INSERT INTO Especie (id_genero, nombre_cientifico) VALUES ((SELECT id_genero FROM Genero WHERE nombre_cientifico = 'Octostruma'), 'Octostruma balzani');
+INSERT INTO Especie (id_genero, nombre_cientifico) VALUES ((SELECT id_genero FROM Genero WHERE nombre_cientifico = 'Solenopsis'), 'Solenopsis sp1');
+
+
+
+SELECT * FROM Familia;
+SELECT * FROM Subfamilia;	
+SELECT * FROM Tribu;
+SELECT * FROM Genero;
+SELECT * FROM Especie;
+
+
+
+SELECT s.id_subfamilia, s.nombre_cientifico AS subfamilia, f.nombre_cientifico AS familia
+FROM Subfamilia s
+JOIN Familia f ON s.id_familia = f.id_familia;
+
+SELECT t.id_tribu, t.nombre_cientifico as Tribu, s.nombre_cientifico AS Subfamilia
+FROM Tribu t
+JOIN Subfamilia s ON t.id_subfamilia = s.id_subfamilia;
+
+
+SELECT g.id_genero, g.nombre_cientifico AS genero, t.nombre_cientifico AS tribu
+FROM Genero g
+JOIN Tribu t ON g.id_tribu = t.id_tribu;
+
+
+SELECT e.id_especie, e.nombre_cientifico AS especie, g.nombre_cientifico AS genero
+FROM Especie e
+JOIN Genero g ON e.id_genero = g.id_genero;
+
+
+SELECT e.id_especie, e.nombre_cientifico AS especie, 
+       g.nombre_cientifico AS genero, 
+       t.nombre_cientifico AS tribu, 
+       s.nombre_cientifico AS subfamilia, 
+       f.nombre_cientifico AS familia
+FROM Especie e
+JOIN Genero g ON e.id_genero = g.id_genero
+JOIN Tribu t ON g.id_tribu = t.id_tribu
+JOIN Subfamilia s ON t.id_subfamilia = s.id_subfamilia
+JOIN Familia f ON s.id_familia = f.id_familia;
+
+
+
+
+
+
+
+
+
+
+
+
+
