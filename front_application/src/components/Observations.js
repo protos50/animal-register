@@ -3,11 +3,13 @@ import axios from 'axios';
 import { DataGrid } from '@mui/x-data-grid';
 import { TablePagination } from '@mui/material';
 
-
-
-
 const columns = [
   { field: 'id_observation', headerName: 'ID', width: 90 },
+  { field: 'collection_date', headerName: 'Collection Date', width: 150 },
+  { field: 'person_name', headerName: 'Person Name', width: 150 },
+  { field: 'person_lastname', headerName: 'Person Lastname', width: 150 },
+  { field: 'trap_name', headerName: 'Trap Name', width: 150 },
+  { field: 'method_name', headerName: 'Method Name', width: 150 },
   { field: 'species', headerName: 'Species', width: 150 },
   { field: 'genus', headerName: 'Genus', width: 150 },
   { field: 'tribe', headerName: 'Tribe', width: 150 },
@@ -31,8 +33,8 @@ const Observations = () => {
     try {
       const response = await axios.get(`/api/observations?limit=${limit}&offset=${offset}`);
       setObservations(response.data);
-      // Establecer el total de filas para la paginación
-      //setTotalRows(parseInt(response.headers['x-total-count'], 10)); // Obtén esto del encabezado de la respuesta
+      // Asegúrate de configurar el total de filas para la paginación
+      // setTotalRows(parseInt(response.headers['x-total-count'], 10)); // Obtén esto del encabezado de la respuesta
     } catch (error) {
       console.error('Error fetching observations:', error);
     }
@@ -52,28 +54,28 @@ const Observations = () => {
   };
 
   return (
-    <div style={{ height: 500, width: '100%' }}>
-
-        <h1>Observations</h1>
-        <DataGrid
-          rows={observations}
-          getRowId={(row) => row.id_observation}
-          columns={columns} // Define tus columnas aquí
-          rowSelection={true}
-          checkboxSelection={true}
-          loading={observations.length === 0}
-        />
-
-        <TablePagination
-          component="div"
-          count={totalRows}
-          page={page}
-          onPageChange={handleChangePage}
-          rowsPerPage={[rowsPerPage]}
-          rowsPerPageOptions={[25, 50, 100, 500, 1000, 2000]}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-
+    <div style={{ height: 600, width: '80%' }}>
+      <h1>Observations</h1>
+      <DataGrid
+        rows={observations}
+        columns={columns}
+        getRowId={(row) => row.id_observation}
+        /*pagination
+        pageSize={rowsPerPage}
+        rowCount={totalRows}
+        paginationMode="server"
+        onPageChange={handleChangePage}*/
+        loading={observations.length === 0}
+      />
+      <TablePagination
+        component="div"
+        count={totalRows}
+        page={page}
+        onPageChange={handleChangePage}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        rowsPerPageOptions={[25, 50, 100]}
+      />
     </div>
   );
 };
