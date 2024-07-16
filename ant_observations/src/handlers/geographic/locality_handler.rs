@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse};
 use sqlx::PgPool;
 use log::{info, error};
-use crate::models::locality::{Locality, SimpleLocality, NewLocality};
+use crate::models::geographic::locality::{Locality, SimpleLocality, NewLocality};
 
 pub async fn get_localities(pool: web::Data<PgPool>) -> HttpResponse {
     match sqlx::query_as::<_, Locality>("

@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse};
 use sqlx::PgPool;
 use log::{info, error};
-use crate::models::family::{Family, NewFamily};
+use crate::models::taxonomic::family::{Family, NewFamily};
 
 pub async fn get_families(pool: web::Data<PgPool>) -> HttpResponse {
     match sqlx::query_as::<_, Family>("

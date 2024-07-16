@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse};
 use sqlx::PgPool;
 use log::{info, error};
-use crate::models::department::{Department, SimpleDepartment, NewDepartment};
+use crate::models::geographic::department::{Department, SimpleDepartment, NewDepartment};
 
 pub async fn get_departments(pool: web::Data<PgPool>) -> HttpResponse {
     match sqlx::query_as::<_, Department>("

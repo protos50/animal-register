@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse, Error};
 use sqlx::PgPool;
 use log::{info, error};
-use crate::models::country::{Country, NewCountry};
+use crate::models::geographic::country::{Country, NewCountry};
 
 pub async fn get_countries(pool: web::Data<PgPool>) -> HttpResponse {
     match sqlx::query_as::<_, Country>("

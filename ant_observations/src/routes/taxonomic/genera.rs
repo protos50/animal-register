@@ -1,5 +1,5 @@
 use actix_web::web;
-use crate::handlers::genus_handler::{get_genera, create_genus};
+use crate::handlers::taxonomic::genus_handler::{get_genera, create_genus};
 
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.route("/genera", web::get().to(get_genera));

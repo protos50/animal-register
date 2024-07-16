@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse};
 use sqlx::PgPool;
 use log::{info, error};
-use crate::models::genus::{Genus, NewGenus};
+use crate::models::taxonomic::genus::{Genus, NewGenus};
 
 pub async fn get_genera(pool: web::Data<PgPool>) -> HttpResponse {
     match sqlx::query_as::<_, Genus>("

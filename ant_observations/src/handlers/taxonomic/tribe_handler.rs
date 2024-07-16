@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse};
 use sqlx::PgPool;
 use log::{info, error};
-use crate::models::tribe::{Tribe, NewTribe};
+use crate::models::taxonomic::tribe::{Tribe, NewTribe};
 
 pub async fn get_tribes(pool: web::Data<PgPool>) -> HttpResponse {
     match sqlx::query_as::<_, Tribe>("

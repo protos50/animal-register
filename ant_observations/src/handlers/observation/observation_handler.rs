@@ -2,7 +2,7 @@ use actix_web::{web, HttpResponse, Error};
 use sqlx::PgPool;
 use log::{info, error};
 use csv::Writer;
-use crate::models::observation::{NewObservation, Observations, PaginationParams};
+use crate::models::observation::observation::{NewObservation, Observations, PaginationParams};
 
 
 pub async fn get_observations(

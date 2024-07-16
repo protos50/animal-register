@@ -1,10 +1,3 @@
-pub mod family_handler;
-pub mod species_handler;
-pub mod genus_handler;
-pub mod subfamily_handler;
-pub mod tribe_handler;
-pub mod observation_handler;
-pub mod locality_handler;
-pub mod department_handler;
-pub mod province_handler;
-pub mod country_handler;
+pub mod taxonomic;
+pub mod geographic;
+pub mod observation;

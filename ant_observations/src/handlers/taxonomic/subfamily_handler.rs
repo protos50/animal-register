@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse};
 use sqlx::PgPool;
 use log::{info, error};
-use crate::models::subfamily::{Subfamily, NewSubfamily};
+use crate::models::taxonomic::subfamily::{Subfamily, NewSubfamily};
 
 pub async fn get_subfamilies(pool: web::Data<PgPool>) -> HttpResponse {
     match sqlx::query_as::<_, Subfamily>("
