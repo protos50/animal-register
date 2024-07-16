@@ -1,14 +1,10 @@
 use actix_web::{web, HttpResponse, Error};
 use sqlx::PgPool;
 use log::{info, error};
-use csv::Writer;
 use crate::models::observation::observation::{NewObservation, Observations, PaginationParams};
 
 
-pub async fn get_observations(
-    pool: web::Data<PgPool>,
-    pagination: web::Query<PaginationParams>,
-) -> HttpResponse {
+pub async fn get_observations(pool: web::Data<PgPool>, pagination: web::Query<PaginationParams>) -> HttpResponse {
     let pagination_params = pagination.into_inner();
 
     let result = sqlx::query_as::<_, Observations>(

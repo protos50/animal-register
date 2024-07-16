@@ -30,4 +30,6 @@ pub struct PaginationParams {
 pub struct NewObservation {
     pub id_species: i32,
     pub id_locality: i32,
+    pub id_person: i32,
+    
 }

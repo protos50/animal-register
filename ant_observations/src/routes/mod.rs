@@ -1,7 +1,7 @@
 pub mod observation;
 pub mod geographic;
 pub mod taxonomic;
-
+pub mod person;
 
 use actix_web::web;
 
@@ -18,5 +18,6 @@ pub fn config(cfg: &mut web::ServiceConfig) {
             .configure(geographic::departments::config)
             .configure(geographic::provinces::config)
             .configure(geographic::countries::config)
+            .configure(person::people::config)
     );
 }

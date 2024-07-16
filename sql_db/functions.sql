@@ -33,8 +33,7 @@ BEGIN
 			OBSERVATION O
 			-- JOINs de collection
 			JOIN COLLECTION CLTN ON O.ID_COLLECTION = CLTN.ID_COLLECTION
-			JOIN COLLECTOR CLTR ON CLTR.ID_COLLECTOR = CLTN.ID_COLLECTOR
-			JOIN PERSON PRSN ON PRSN.ID_PERSON = CLTR.ID_PERSON
+			JOIN PERSON PRSN ON PRSN.ID_PERSON = CLTN.ID_PERSON
 			JOIN TRAP TRP ON TRP.ID_TRAP = CLTN.ID_TRAP
 			JOIN PRESERVATION_METHOD PM ON  PM.ID_PRESERVATION_METHOD = CLTN.ID_PRESERVATION_METHOD
 			-- JOINs de descripcion animal
@@ -52,11 +51,11 @@ BEGIN
         RETURN QUERY
         SELECT
 			O.ID_OBSERVATION,
-			CLTN.COLLECTION_DATE,
-			PRSN.PERSON_NAME,
-			PRSN.PERSON_LASTNAME,
-			TRP.TRAP_NAME,
-			PM.METHOD_NAME,
+			CLTN.COLLECTION_DATE AS COLLECTION_DATE,
+			PRSN.PERSON_NAME AS PERSON_NAME,
+			PRSN.PERSON_LASTNAME AS PERSON_LASTNAME,
+			TRP.TRAP_NAME AS TRAP_NAME,
+			PM.METHOD_NAME AS METHOD_NAME,
 			E.SCIENTIFIC_NAME AS SPECIES,
 			G.SCIENTIFIC_NAME AS GENUS,
 			T.SCIENTIFIC_NAME AS TRIBE,
@@ -69,8 +68,7 @@ BEGIN
 			OBSERVATION O
 			-- JOINs de collection
 			JOIN COLLECTION CLTN ON O.ID_COLLECTION = CLTN.ID_COLLECTION
-			JOIN COLLECTOR CLTR ON CLTR.ID_COLLECTOR = CLTN.ID_COLLECTOR
-			JOIN PERSON PRSN ON PRSN.ID_PERSON = CLTR.ID_PERSON
+			JOIN PERSON PRSN ON PRSN.ID_PERSON = CLTN.ID_PERSON
 			JOIN TRAP TRP ON TRP.ID_TRAP = CLTN.ID_TRAP
 			JOIN PRESERVATION_METHOD PM ON  PM.ID_PRESERVATION_METHOD = CLTN.ID_PRESERVATION_METHOD
 			-- JOINs de descripcion animal
@@ -141,7 +139,7 @@ ALTER FUNCTION public.get_locations()
 -- DROP FUNCTION IF EXISTS public.add_collection_and_observation(integer, integer, integer, date, integer, integer);
 
 CREATE OR REPLACE FUNCTION public.add_collection_and_observation(
-	_id_collector integer,
+	_id_person integer,
 	_id_preservation_method integer,
 	_id_trap integer,
 	_collection_date date,
@@ -158,8 +156,8 @@ DECLARE
 BEGIN
     BEGIN
         -- Insert into COLLECTION
-        INSERT INTO COLLECTION (ID_COLLECTOR, ID_PRESERVATION_METHOD, ID_TRAP, COLLECTION_DATE)
-        VALUES (_id_collector, _id_preservation_method, _id_trap, _collection_date)
+        INSERT INTO COLLECTION (ID_PERSON, ID_PRESERVATION_METHOD, ID_TRAP, COLLECTION_DATE)
+        VALUES (_id_person, _id_preservation_method, _id_trap, _collection_date)
         RETURNING ID_COLLECTION INTO _id_collection;
     EXCEPTION WHEN OTHERS THEN
         -- Handle the error
@@ -192,7 +190,7 @@ DECLARE
     result INTEGER;
 BEGIN
     result := add_collection_and_observation(
-        _id_collector => 1,
+        _id_person => 1,
         _id_preservation_method => 1,
         _id_trap => 1,
         _collection_date => '2023-07-11',  -- Usar una fecha válida en formato ISO
