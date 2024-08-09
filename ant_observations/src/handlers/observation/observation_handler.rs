@@ -7,7 +7,7 @@ use crate::models::observation::observation::{NewObservation, Observations, Pagi
 pub async fn get_observations(pool: web::Data<PgPool>, pagination: web::Query<PaginationParams>) -> HttpResponse {
     let pagination_params = pagination.into_inner();
 
-    let result = sqlx::query_as::<_, Observations>(
+    let result: Result<Vec<Observations>, sqlx::Error> = sqlx::query_as::<_, Observations>(
         "SELECT * FROM public.get_observations($1, $2)",
     )
     .bind(pagination_params.limit)

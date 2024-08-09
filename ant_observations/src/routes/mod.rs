@@ -1,5 +1,6 @@
 pub mod observation;
 pub mod geographic;
+pub mod collection;
 pub mod taxonomic;
 pub mod person;
 
@@ -19,5 +20,9 @@ pub fn config(cfg: &mut web::ServiceConfig) {
             .configure(geographic::provinces::config)
             .configure(geographic::countries::config)
             .configure(person::people::config)
+            .configure(person::roles::config)
+            .configure(collection::preservation_method::config)
+            .configure(collection::trap::config)
+
     );
 }

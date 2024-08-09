@@ -31,5 +31,7 @@ pub struct NewObservation {
     pub id_species: i32,
     pub id_locality: i32,
     pub id_person: i32,
-    
+    pub id_preservation_method: i32,
+    pub id_trap: i32,
+    pub collection_date: NaiveDate
 }

@@ -13,10 +13,17 @@ const AddRecordForm = ({ table, relatedTable, onSubmit }) => {
         tribes: { label: 'Tribe', nameField: 'scientific_name' },
         genera: { label: 'Genus', nameField: 'scientific_name' },
         species: { label: 'Species', nameField: 'scientific_name' },
+        //
         localities: { label: 'Locality', nameField: 'locality_name' },
         departments: { label: 'Department', nameField: 'department_name' },
         provinces: { label: 'Province', nameField: 'province_name' },
-        countries: { label: 'Country', nameField: 'country_name' }
+        countries: { label: 'Country', nameField: 'country_name' },
+        //
+        people: { label: 'Person', nameField: 'person_' }, 
+        roles: { label: 'Role', nameField: 'role_name' },
+        //
+        traps: { label: 'Trap', nameField: 'trap_name' },
+        preservation_methods: { label: 'Preservation Method', nameField: 'method_name' },
     };
 
     useEffect(() => {

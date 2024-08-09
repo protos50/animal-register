@@ -1,4 +1,4 @@
-use actix_web::{web, HttpResponse, Error};
+use actix_web::{web, HttpResponse};
 use sqlx::PgPool;
 use log::{info, error};
 use crate::models::person::person::{Person, NewPerson};

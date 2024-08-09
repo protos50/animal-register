@@ -9,7 +9,7 @@ const columns = [
   { field: 'person_name', headerName: 'Person Name', width: 150 },
   { field: 'person_lastname', headerName: 'Person Lastname', width: 150 },
   { field: 'trap_name', headerName: 'Trap Name', width: 150 },
-  { field: 'method_name', headerName: 'Method Name', width: 150 },
+  { field: 'method_name', headerName: 'Preservation Method', width: 150 },
   { field: 'species', headerName: 'Species', width: 150 },
   { field: 'genus', headerName: 'Genus', width: 150 },
   { field: 'tribe', headerName: 'Tribe', width: 150 },
@@ -19,7 +19,7 @@ const columns = [
   { field: 'department', headerName: 'Department', width: 150 },
   { field: 'locality', headerName: 'Locality', width: 150 },
 ];
-
+ 
 const Observations = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(100);
