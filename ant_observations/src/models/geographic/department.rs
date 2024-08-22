@@ -6,7 +6,6 @@ pub struct Department {
     pub id_department: i32,
     pub province: String,
     pub department: String,
-
 }
 
 #[derive(Serialize, Deserialize, FromRow)]

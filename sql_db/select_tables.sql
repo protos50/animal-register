@@ -149,3 +149,6 @@ FROM
 	JOIN DEPARTMENT D ON L.ID_DEPARTMENT = D.ID_DEPARTMENT;
 
 SELECT * FROM public.get_observations(-1, -1);
+
+SELECT * FROM ROLE;
+SELECT * FROM person_role;

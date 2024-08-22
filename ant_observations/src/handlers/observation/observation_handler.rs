@@ -27,28 +27,39 @@ pub async fn get_observations(pool: web::Data<PgPool>, pagination: web::Query<Pa
     }
 }
 
-pub async fn create_observation(new_observation: web::Json<NewObservation>, pool: web::Data<PgPool>) -> HttpResponse {
-    let new_observation: NewObservation = new_observation.into_inner(); // Convertir de web::Json a Family
+pub async fn create_observation(
+    new_observation: web::Json<NewObservation>,
+    pool: web::Data<PgPool>
+) -> HttpResponse {
+    let new_observation: NewObservation = new_observation.into_inner();
     
-    // Ejecutar la inserción en la base de datos
+    // Ejecutar la función almacenada en la base de datos
     let result = sqlx::query!(
-        "INSERT INTO OBSERVATION (ID_SPECIES, ID_LOCALITY) VALUES ($1, $2) RETURNING ID_OBSERVATION",
-        new_observation.id_species, new_observation.id_locality
+        "SELECT public.add_collection_and_observation($1, $2, $3, $4, $5, $6) as id_observation",
+        new_observation.id_person,
+        new_observation.id_preservation_method,
+        new_observation.id_trap,
+        new_observation.collection_date,
+        new_observation.id_species,
+        new_observation.id_locality
     )
     .fetch_one(pool.get_ref())
     .await;
-    
+
+
     match result {
         Ok(row) => {
-            info!("Successfully created species: {:?}", row); 
+            info!("Successfully created observation: {:?}", row.id_observation);
             HttpResponse::Created().json(row.id_observation)
         }
         Err(e) => {
             error!("Failed to create observation: {:?}", e);
+            dbg!(&e); // Esto imprimirá más detalles del error en la terminal
             HttpResponse::InternalServerError().finish()
-        }
+        }        
     }
 }
+
 
 pub async fn download_observations_csv(
     pool: web::Data<PgPool>,

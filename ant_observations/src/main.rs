@@ -10,7 +10,7 @@ use ant_observations::routes;
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
-    env_logger::init_from_env(Env::default().default_filter_or("info"));
+    env_logger::init_from_env(Env::default().default_filter_or("debug"));
 
     let port: u16 = env::var("SERVER_PORT").expect("SERVER_PORT not set").parse().expect("Invalid port number");
     let url: String = env::var("SERVER_URL").expect("SERVER_URL not set").parse().expect("Invalid url number");
