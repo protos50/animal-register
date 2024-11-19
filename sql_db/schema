@@ -1,0 +1,1807 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 16.3
+-- Dumped by pg_dump version 16.3
+
+-- Started on 2024-11-19 01:55:31 -03
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 265 (class 1255 OID 17095)
+-- Name: add_collection_and_observation(integer, integer, integer, date, integer, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.add_collection_and_observation(_id_person integer, _id_preservation_method integer, _id_trap integer, _collection_date date, _id_species integer, _id_locality integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    _id_collection INTEGER;
+    _id_observation INTEGER;
+BEGIN
+    BEGIN
+        -- Insert into COLLECTION
+        INSERT INTO COLLECTION (ID_PERSON, ID_PRESERVATION_METHOD, ID_TRAP, COLLECTION_DATE)
+        VALUES (_id_person, _id_preservation_method, _id_trap, _collection_date)
+        RETURNING ID_COLLECTION INTO _id_collection;
+    EXCEPTION WHEN OTHERS THEN
+        -- Handle the error
+        RAISE EXCEPTION 'Failed to insert into COLLECTION: %', SQLERRM;
+    END;
+
+    BEGIN
+        -- Insert into OBSERVATION
+        INSERT INTO OBSERVATION (ID_SPECIES, ID_LOCALITY, ID_COLLECTION)
+        VALUES (_id_species, _id_locality, _id_collection)
+        RETURNING ID_OBSERVATION INTO _id_observation;
+    EXCEPTION WHEN OTHERS THEN
+        -- Handle the error and rollback the previous insert
+        RAISE EXCEPTION 'Failed to insert into OBSERVATION: %', SQLERRM;
+    END;
+
+    -- Return the ID of the new observation
+    RETURN _id_observation;
+END;
+$$;
+
+
+ALTER FUNCTION public.add_collection_and_observation(_id_person integer, _id_preservation_method integer, _id_trap integer, _collection_date date, _id_species integer, _id_locality integer) OWNER TO postgres;
+
+--
+-- TOC entry 264 (class 1255 OID 17094)
+-- Name: get_locations(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_locations() RETURNS TABLE(locality text, department text, province text, country text)
+    LANGUAGE plpgsql COST 50 ROWS 100 PARALLEL SAFE
+    AS $$
+BEGIN
+	RETURN QUERY
+	SELECT
+		L.LOCALITY_NAME AS LOCALITY,
+		D.DEPARTMENT_NAME AS DEPARTMENT,
+		P.PROVINCE_NAME AS PROVINCE,
+		C.COUNTRY_NAME AS COUNTRY
+	FROM
+		LOCALITY L
+		RIGHT JOIN DEPARTMENT D ON D.ID_DEPARTMENT = L.ID_DEPARTMENT
+		RIGHT JOIN PROVINCE P ON P.ID_PROVINCE = D.ID_PROVINCE
+		RIGHT JOIN COUNTRY C ON C.ID_COUNTRY = P.ID_COUNTRY;
+END;
+$$;
+
+
+ALTER FUNCTION public.get_locations() OWNER TO postgres;
+
+--
+-- TOC entry 263 (class 1255 OID 17048)
+-- Name: get_observations(integer, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_observations(_limit integer, _offset integer) RETURNS TABLE(id_observation integer, collection_date date, person_name text, person_lastname text, trap_name text, method_name text, species text, genus text, tribe text, subfamily text, family text, province text, department text, locality text)
+    LANGUAGE plpgsql ROWS 2007 PARALLEL SAFE
+    AS $$
+BEGIN
+    IF _limit = -1 THEN
+        RETURN QUERY
+		SELECT
+			O.ID_OBSERVATION,
+			CLTN.COLLECTION_DATE AS COLLECTION_DATE,
+			PRSN.PERSON_NAME AS PERSON_NAME,
+			PRSN.PERSON_LASTNAME AS PERSON_LASTNAME,
+			TRP.TRAP_NAME AS TRAP_NAME,
+			PM.METHOD_NAME AS METHOD_NAME,
+			E.SCIENTIFIC_NAME AS SPECIES,
+			G.SCIENTIFIC_NAME AS GENUS,
+			T.SCIENTIFIC_NAME AS TRIBE,
+			S.SCIENTIFIC_NAME AS SUBFAMILY,
+			F.SCIENTIFIC_NAME AS FAMILY,
+			P.PROVINCE_NAME AS PROVINCE,
+			D.DEPARTMENT_NAME AS DEPARTMENT,
+			L.LOCALITY_NAME AS LOCALITY
+		FROM
+			OBSERVATION O
+			-- JOINs de collection
+			JOIN COLLECTION CLTN ON O.ID_COLLECTION = CLTN.ID_COLLECTION
+			JOIN PERSON PRSN ON PRSN.ID_PERSON = CLTN.ID_PERSON
+			JOIN TRAP TRP ON TRP.ID_TRAP = CLTN.ID_TRAP
+			JOIN PRESERVATION_METHOD PM ON  PM.ID_PRESERVATION_METHOD = CLTN.ID_PRESERVATION_METHOD
+			-- JOINs de descripcion animal
+			JOIN SPECIES E ON O.ID_SPECIES = E.ID_SPECIES
+			JOIN GENUS G ON E.ID_GENUS = G.ID_GENUS
+			JOIN TRIBE T ON G.ID_TRIBE = T.ID_TRIBE
+			JOIN SUBFAMILY S ON T.ID_SUBFAMILY = S.ID_SUBFAMILY
+			JOIN FAMILY F ON S.ID_FAMILY = F.ID_FAMILY
+			-- JOINs de location
+			JOIN LOCALITY L ON O.ID_LOCALITY = L.ID_LOCALITY
+			JOIN DEPARTMENT D ON L.ID_DEPARTMENT = D.ID_DEPARTMENT
+			JOIN PROVINCE P ON D.ID_PROVINCE = P.ID_PROVINCE
+        ORDER BY O.ID_OBSERVATION;
+    ELSE
+        RETURN QUERY
+        SELECT
+			O.ID_OBSERVATION,
+			CLTN.COLLECTION_DATE AS COLLECTION_DATE,
+			PRSN.PERSON_NAME AS PERSON_NAME,
+			PRSN.PERSON_LASTNAME AS PERSON_LASTNAME,
+			TRP.TRAP_NAME AS TRAP_NAME,
+			PM.METHOD_NAME AS METHOD_NAME,
+			E.SCIENTIFIC_NAME AS SPECIES,
+			G.SCIENTIFIC_NAME AS GENUS,
+			T.SCIENTIFIC_NAME AS TRIBE,
+			S.SCIENTIFIC_NAME AS SUBFAMILY,
+			F.SCIENTIFIC_NAME AS FAMILY,
+			P.PROVINCE_NAME AS PROVINCE,
+			D.DEPARTMENT_NAME AS DEPARTMENT,
+			L.LOCALITY_NAME AS LOCALITY
+		FROM
+			OBSERVATION O
+			-- JOINs de collection
+			JOIN COLLECTION CLTN ON O.ID_COLLECTION = CLTN.ID_COLLECTION
+			JOIN PERSON PRSN ON PRSN.ID_PERSON = CLTN.ID_PERSON
+			JOIN TRAP TRP ON TRP.ID_TRAP = CLTN.ID_TRAP
+			JOIN PRESERVATION_METHOD PM ON  PM.ID_PRESERVATION_METHOD = CLTN.ID_PRESERVATION_METHOD
+			-- JOINs de descripcion animal
+			JOIN SPECIES E ON O.ID_SPECIES = E.ID_SPECIES
+			JOIN GENUS G ON E.ID_GENUS = G.ID_GENUS
+			JOIN TRIBE T ON G.ID_TRIBE = T.ID_TRIBE
+			JOIN SUBFAMILY S ON T.ID_SUBFAMILY = S.ID_SUBFAMILY
+			JOIN FAMILY F ON S.ID_FAMILY = F.ID_FAMILY
+			-- JOINs de location
+			JOIN LOCALITY L ON O.ID_LOCALITY = L.ID_LOCALITY
+			JOIN DEPARTMENT D ON L.ID_DEPARTMENT = D.ID_DEPARTMENT
+			JOIN PROVINCE P ON D.ID_PROVINCE = P.ID_PROVINCE
+        ORDER BY O.ID_OBSERVATION
+        LIMIT _limit
+        OFFSET _offset;
+    END IF;
+END;
+$$;
+
+
+ALTER FUNCTION public.get_observations(_limit integer, _offset integer) OWNER TO postgres;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 249 (class 1259 OID 17050)
+-- Name: collection; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.collection (
+    id_collection integer NOT NULL,
+    id_person integer NOT NULL,
+    id_preservation_method integer NOT NULL,
+    id_trap integer NOT NULL,
+    collection_date date NOT NULL,
+    CONSTRAINT chk_collection_date CHECK ((collection_date <= CURRENT_DATE))
+);
+
+
+ALTER TABLE public.collection OWNER TO postgres;
+
+--
+-- TOC entry 248 (class 1259 OID 17049)
+-- Name: collection_id_collection_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.collection_id_collection_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.collection_id_collection_seq OWNER TO postgres;
+
+--
+-- TOC entry 4620 (class 0 OID 0)
+-- Dependencies: 248
+-- Name: collection_id_collection_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.collection_id_collection_seq OWNED BY public.collection.id_collection;
+
+
+--
+-- TOC entry 236 (class 1259 OID 16638)
+-- Name: collector; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.collector (
+    id_collector integer NOT NULL,
+    id_person integer NOT NULL,
+    description text
+);
+
+
+ALTER TABLE public.collector OWNER TO postgres;
+
+--
+-- TOC entry 235 (class 1259 OID 16637)
+-- Name: collector_id_collector_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.collector_id_collector_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.collector_id_collector_seq OWNER TO postgres;
+
+--
+-- TOC entry 4621 (class 0 OID 0)
+-- Dependencies: 235
+-- Name: collector_id_collector_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.collector_id_collector_seq OWNED BY public.collector.id_collector;
+
+
+--
+-- TOC entry 238 (class 1259 OID 16661)
+-- Name: country; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.country (
+    id_country integer NOT NULL,
+    country_name text NOT NULL
+);
+
+
+ALTER TABLE public.country OWNER TO postgres;
+
+--
+-- TOC entry 237 (class 1259 OID 16660)
+-- Name: country_id_country_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.country_id_country_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.country_id_country_seq OWNER TO postgres;
+
+--
+-- TOC entry 4622 (class 0 OID 0)
+-- Dependencies: 237
+-- Name: country_id_country_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.country_id_country_seq OWNED BY public.country.id_country;
+
+
+--
+-- TOC entry 242 (class 1259 OID 16736)
+-- Name: department; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.department (
+    id_department integer NOT NULL,
+    id_province integer NOT NULL,
+    department_name text NOT NULL
+);
+
+
+ALTER TABLE public.department OWNER TO postgres;
+
+--
+-- TOC entry 241 (class 1259 OID 16735)
+-- Name: department_id_department_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.department_id_department_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.department_id_department_seq OWNER TO postgres;
+
+--
+-- TOC entry 4623 (class 0 OID 0)
+-- Dependencies: 241
+-- Name: department_id_department_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.department_id_department_seq OWNED BY public.department.id_department;
+
+
+--
+-- TOC entry 228 (class 1259 OID 16597)
+-- Name: environment; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.environment (
+    id_environment integer NOT NULL,
+    environment_name text NOT NULL
+);
+
+
+ALTER TABLE public.environment OWNER TO postgres;
+
+--
+-- TOC entry 227 (class 1259 OID 16596)
+-- Name: environment_id_environment_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.environment_id_environment_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.environment_id_environment_seq OWNER TO postgres;
+
+--
+-- TOC entry 4624 (class 0 OID 0)
+-- Dependencies: 227
+-- Name: environment_id_environment_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.environment_id_environment_seq OWNED BY public.environment.id_environment;
+
+
+--
+-- TOC entry 216 (class 1259 OID 16510)
+-- Name: family; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.family (
+    id_family integer NOT NULL,
+    scientific_name text NOT NULL
+);
+
+
+ALTER TABLE public.family OWNER TO postgres;
+
+--
+-- TOC entry 215 (class 1259 OID 16509)
+-- Name: family_id_family_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.family_id_family_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.family_id_family_seq OWNER TO postgres;
+
+--
+-- TOC entry 4625 (class 0 OID 0)
+-- Dependencies: 215
+-- Name: family_id_family_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.family_id_family_seq OWNED BY public.family.id_family;
+
+
+--
+-- TOC entry 222 (class 1259 OID 16547)
+-- Name: genus; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.genus (
+    id_genus integer NOT NULL,
+    id_tribe integer NOT NULL,
+    scientific_name text NOT NULL
+);
+
+
+ALTER TABLE public.genus OWNER TO postgres;
+
+--
+-- TOC entry 221 (class 1259 OID 16546)
+-- Name: genus_id_genus_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.genus_id_genus_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.genus_id_genus_seq OWNER TO postgres;
+
+--
+-- TOC entry 4626 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: genus_id_genus_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.genus_id_genus_seq OWNED BY public.genus.id_genus;
+
+
+--
+-- TOC entry 234 (class 1259 OID 16624)
+-- Name: identifier; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.identifier (
+    id_identifier integer NOT NULL,
+    id_person integer NOT NULL,
+    description text
+);
+
+
+ALTER TABLE public.identifier OWNER TO postgres;
+
+--
+-- TOC entry 233 (class 1259 OID 16623)
+-- Name: identifier_id_identifier_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.identifier_id_identifier_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.identifier_id_identifier_seq OWNER TO postgres;
+
+--
+-- TOC entry 4627 (class 0 OID 0)
+-- Dependencies: 233
+-- Name: identifier_id_identifier_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.identifier_id_identifier_seq OWNED BY public.identifier.id_identifier;
+
+
+--
+-- TOC entry 244 (class 1259 OID 16751)
+-- Name: locality; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.locality (
+    id_locality integer NOT NULL,
+    id_department integer NOT NULL,
+    locality_name text NOT NULL
+);
+
+
+ALTER TABLE public.locality OWNER TO postgres;
+
+--
+-- TOC entry 243 (class 1259 OID 16750)
+-- Name: locality_id_locality_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.locality_id_locality_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.locality_id_locality_seq OWNER TO postgres;
+
+--
+-- TOC entry 4628 (class 0 OID 0)
+-- Dependencies: 243
+-- Name: locality_id_locality_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.locality_id_locality_seq OWNED BY public.locality.id_locality;
+
+
+--
+-- TOC entry 251 (class 1259 OID 17073)
+-- Name: observation; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.observation (
+    id_observation integer NOT NULL,
+    id_species integer NOT NULL,
+    id_locality integer NOT NULL,
+    id_collection integer NOT NULL
+);
+
+
+ALTER TABLE public.observation OWNER TO postgres;
+
+--
+-- TOC entry 250 (class 1259 OID 17072)
+-- Name: observation_id_observation_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.observation_id_observation_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.observation_id_observation_seq OWNER TO postgres;
+
+--
+-- TOC entry 4629 (class 0 OID 0)
+-- Dependencies: 250
+-- Name: observation_id_observation_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.observation_id_observation_seq OWNED BY public.observation.id_observation;
+
+
+--
+-- TOC entry 232 (class 1259 OID 16615)
+-- Name: person; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.person (
+    id_person integer NOT NULL,
+    person_name text NOT NULL,
+    person_lastname text NOT NULL
+);
+
+
+ALTER TABLE public.person OWNER TO postgres;
+
+--
+-- TOC entry 231 (class 1259 OID 16614)
+-- Name: person_id_person_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.person_id_person_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.person_id_person_seq OWNER TO postgres;
+
+--
+-- TOC entry 4630 (class 0 OID 0)
+-- Dependencies: 231
+-- Name: person_id_person_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.person_id_person_seq OWNED BY public.person.id_person;
+
+
+--
+-- TOC entry 247 (class 1259 OID 17032)
+-- Name: person_role; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.person_role (
+    id_person integer NOT NULL,
+    id_role integer NOT NULL,
+    is_active boolean DEFAULT false
+);
+
+
+ALTER TABLE public.person_role OWNER TO postgres;
+
+--
+-- TOC entry 226 (class 1259 OID 16587)
+-- Name: preservation_method; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.preservation_method (
+    id_preservation_method integer NOT NULL,
+    method_name text NOT NULL
+);
+
+
+ALTER TABLE public.preservation_method OWNER TO postgres;
+
+--
+-- TOC entry 225 (class 1259 OID 16586)
+-- Name: preservation_method_id_preservation_method_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.preservation_method_id_preservation_method_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.preservation_method_id_preservation_method_seq OWNER TO postgres;
+
+--
+-- TOC entry 4631 (class 0 OID 0)
+-- Dependencies: 225
+-- Name: preservation_method_id_preservation_method_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.preservation_method_id_preservation_method_seq OWNED BY public.preservation_method.id_preservation_method;
+
+
+--
+-- TOC entry 240 (class 1259 OID 16693)
+-- Name: province; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.province (
+    id_province integer NOT NULL,
+    id_country integer NOT NULL,
+    province_name text NOT NULL
+);
+
+
+ALTER TABLE public.province OWNER TO postgres;
+
+--
+-- TOC entry 239 (class 1259 OID 16692)
+-- Name: province_id_province_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.province_id_province_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.province_id_province_seq OWNER TO postgres;
+
+--
+-- TOC entry 4632 (class 0 OID 0)
+-- Dependencies: 239
+-- Name: province_id_province_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.province_id_province_seq OWNED BY public.province.id_province;
+
+
+--
+-- TOC entry 246 (class 1259 OID 17024)
+-- Name: role; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.role (
+    id_role integer NOT NULL,
+    role_name text NOT NULL
+);
+
+
+ALTER TABLE public.role OWNER TO postgres;
+
+--
+-- TOC entry 245 (class 1259 OID 17023)
+-- Name: role_id_role_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.role_id_role_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.role_id_role_seq OWNER TO postgres;
+
+--
+-- TOC entry 4633 (class 0 OID 0)
+-- Dependencies: 245
+-- Name: role_id_role_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.role_id_role_seq OWNED BY public.role.id_role;
+
+
+--
+-- TOC entry 224 (class 1259 OID 16561)
+-- Name: species; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.species (
+    id_species integer NOT NULL,
+    id_genus integer NOT NULL,
+    scientific_name text NOT NULL
+);
+
+
+ALTER TABLE public.species OWNER TO postgres;
+
+--
+-- TOC entry 223 (class 1259 OID 16560)
+-- Name: species_id_species_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.species_id_species_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.species_id_species_seq OWNER TO postgres;
+
+--
+-- TOC entry 4634 (class 0 OID 0)
+-- Dependencies: 223
+-- Name: species_id_species_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.species_id_species_seq OWNED BY public.species.id_species;
+
+
+--
+-- TOC entry 218 (class 1259 OID 16519)
+-- Name: subfamily; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.subfamily (
+    id_subfamily integer NOT NULL,
+    id_family integer NOT NULL,
+    scientific_name text NOT NULL
+);
+
+
+ALTER TABLE public.subfamily OWNER TO postgres;
+
+--
+-- TOC entry 217 (class 1259 OID 16518)
+-- Name: subfamily_id_subfamily_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.subfamily_id_subfamily_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.subfamily_id_subfamily_seq OWNER TO postgres;
+
+--
+-- TOC entry 4635 (class 0 OID 0)
+-- Dependencies: 217
+-- Name: subfamily_id_subfamily_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.subfamily_id_subfamily_seq OWNED BY public.subfamily.id_subfamily;
+
+
+--
+-- TOC entry 230 (class 1259 OID 16606)
+-- Name: trap; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.trap (
+    id_trap integer NOT NULL,
+    trap_name text NOT NULL
+);
+
+
+ALTER TABLE public.trap OWNER TO postgres;
+
+--
+-- TOC entry 229 (class 1259 OID 16605)
+-- Name: trap_id_trap_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.trap_id_trap_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.trap_id_trap_seq OWNER TO postgres;
+
+--
+-- TOC entry 4636 (class 0 OID 0)
+-- Dependencies: 229
+-- Name: trap_id_trap_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.trap_id_trap_seq OWNED BY public.trap.id_trap;
+
+
+--
+-- TOC entry 220 (class 1259 OID 16533)
+-- Name: tribe; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.tribe (
+    id_tribe integer NOT NULL,
+    id_subfamily integer NOT NULL,
+    scientific_name text NOT NULL
+);
+
+
+ALTER TABLE public.tribe OWNER TO postgres;
+
+--
+-- TOC entry 219 (class 1259 OID 16532)
+-- Name: tribe_id_tribe_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.tribe_id_tribe_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.tribe_id_tribe_seq OWNER TO postgres;
+
+--
+-- TOC entry 4637 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: tribe_id_tribe_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.tribe_id_tribe_seq OWNED BY public.tribe.id_tribe;
+
+
+--
+-- TOC entry 4377 (class 2604 OID 17053)
+-- Name: collection id_collection; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.collection ALTER COLUMN id_collection SET DEFAULT nextval('public.collection_id_collection_seq'::regclass);
+
+
+--
+-- TOC entry 4370 (class 2604 OID 16641)
+-- Name: collector id_collector; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.collector ALTER COLUMN id_collector SET DEFAULT nextval('public.collector_id_collector_seq'::regclass);
+
+
+--
+-- TOC entry 4371 (class 2604 OID 16664)
+-- Name: country id_country; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.country ALTER COLUMN id_country SET DEFAULT nextval('public.country_id_country_seq'::regclass);
+
+
+--
+-- TOC entry 4373 (class 2604 OID 16739)
+-- Name: department id_department; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.department ALTER COLUMN id_department SET DEFAULT nextval('public.department_id_department_seq'::regclass);
+
+
+--
+-- TOC entry 4366 (class 2604 OID 16600)
+-- Name: environment id_environment; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.environment ALTER COLUMN id_environment SET DEFAULT nextval('public.environment_id_environment_seq'::regclass);
+
+
+--
+-- TOC entry 4360 (class 2604 OID 16513)
+-- Name: family id_family; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.family ALTER COLUMN id_family SET DEFAULT nextval('public.family_id_family_seq'::regclass);
+
+
+--
+-- TOC entry 4363 (class 2604 OID 16550)
+-- Name: genus id_genus; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.genus ALTER COLUMN id_genus SET DEFAULT nextval('public.genus_id_genus_seq'::regclass);
+
+
+--
+-- TOC entry 4369 (class 2604 OID 16627)
+-- Name: identifier id_identifier; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.identifier ALTER COLUMN id_identifier SET DEFAULT nextval('public.identifier_id_identifier_seq'::regclass);
+
+
+--
+-- TOC entry 4374 (class 2604 OID 16754)
+-- Name: locality id_locality; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.locality ALTER COLUMN id_locality SET DEFAULT nextval('public.locality_id_locality_seq'::regclass);
+
+
+--
+-- TOC entry 4378 (class 2604 OID 17076)
+-- Name: observation id_observation; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.observation ALTER COLUMN id_observation SET DEFAULT nextval('public.observation_id_observation_seq'::regclass);
+
+
+--
+-- TOC entry 4368 (class 2604 OID 16618)
+-- Name: person id_person; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.person ALTER COLUMN id_person SET DEFAULT nextval('public.person_id_person_seq'::regclass);
+
+
+--
+-- TOC entry 4365 (class 2604 OID 16590)
+-- Name: preservation_method id_preservation_method; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.preservation_method ALTER COLUMN id_preservation_method SET DEFAULT nextval('public.preservation_method_id_preservation_method_seq'::regclass);
+
+
+--
+-- TOC entry 4372 (class 2604 OID 16696)
+-- Name: province id_province; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.province ALTER COLUMN id_province SET DEFAULT nextval('public.province_id_province_seq'::regclass);
+
+
+--
+-- TOC entry 4375 (class 2604 OID 17027)
+-- Name: role id_role; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.role ALTER COLUMN id_role SET DEFAULT nextval('public.role_id_role_seq'::regclass);
+
+
+--
+-- TOC entry 4364 (class 2604 OID 16564)
+-- Name: species id_species; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.species ALTER COLUMN id_species SET DEFAULT nextval('public.species_id_species_seq'::regclass);
+
+
+--
+-- TOC entry 4361 (class 2604 OID 16522)
+-- Name: subfamily id_subfamily; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.subfamily ALTER COLUMN id_subfamily SET DEFAULT nextval('public.subfamily_id_subfamily_seq'::regclass);
+
+
+--
+-- TOC entry 4367 (class 2604 OID 16609)
+-- Name: trap id_trap; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.trap ALTER COLUMN id_trap SET DEFAULT nextval('public.trap_id_trap_seq'::regclass);
+
+
+--
+-- TOC entry 4362 (class 2604 OID 16536)
+-- Name: tribe id_tribe; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tribe ALTER COLUMN id_tribe SET DEFAULT nextval('public.tribe_id_tribe_seq'::regclass);
+
+
+--
+-- TOC entry 4612 (class 0 OID 17050)
+-- Dependencies: 249
+-- Data for Name: collection; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.collection (id_collection, id_person, id_preservation_method, id_trap, collection_date) FROM stdin;
+1	1	1	1	2023-07-11
+2	1	1	1	2024-08-09
+3	1	1	1	2024-08-20
+4	1	1	1	2024-10-09
+\.
+
+
+--
+-- TOC entry 4599 (class 0 OID 16638)
+-- Dependencies: 236
+-- Data for Name: collector; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.collector (id_collector, id_person, description) FROM stdin;
+1	1	colector profesional
+\.
+
+
+--
+-- TOC entry 4601 (class 0 OID 16661)
+-- Dependencies: 238
+-- Data for Name: country; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.country (id_country, country_name) FROM stdin;
+1	Argentina
+2	Brasil
+3	Uruguay
+4	Uruguay
+5	Chile
+6	Mexico
+\.
+
+
+--
+-- TOC entry 4605 (class 0 OID 16736)
+-- Dependencies: 242
+-- Data for Name: department; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.department (id_department, id_province, department_name) FROM stdin;
+1	2	Sargento Cabral
+2	3	Empedrado
+3	3	Itatí
+4	5	General Obligado
+\.
+
+
+--
+-- TOC entry 4591 (class 0 OID 16597)
+-- Dependencies: 228
+-- Data for Name: environment; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.environment (id_environment, environment_name) FROM stdin;
+1	Selva riparia
+\.
+
+
+--
+-- TOC entry 4579 (class 0 OID 16510)
+-- Dependencies: 216
+-- Data for Name: family; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.family (id_family, scientific_name) FROM stdin;
+1	Formicidae
+4	Nueva Familia 2
+5	familia2
+6	familia3
+7	jkhkjhkj
+8	femilia4
+9	femilia5
+10	asd
+11	nuevo
+12	test1
+13	otro as
+14	1
+15	bbb
+16	ccc
+17	antTest
+\.
+
+
+--
+-- TOC entry 4585 (class 0 OID 16547)
+-- Dependencies: 222
+-- Data for Name: genus; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.genus (id_genus, id_tribe, scientific_name) FROM stdin;
+1	1	Prionopelta
+2	2	Hypoponera
+3	3	Octostruma
+4	4	Solenopsis
+6	4	Nuevo Genero 1
+7	3	genero2
+8	12	Brachymyrmex
+9	9	jedj
+10	13	ccc
+\.
+
+
+--
+-- TOC entry 4597 (class 0 OID 16624)
+-- Dependencies: 234
+-- Data for Name: identifier; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.identifier (id_identifier, id_person, description) FROM stdin;
+1	1	dario el jefecito
+\.
+
+
+--
+-- TOC entry 4607 (class 0 OID 16751)
+-- Dependencies: 244
+-- Data for Name: locality; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.locality (id_locality, id_department, locality_name) FROM stdin;
+1	1	Estancia El Bagual
+2	2	Parada Coco
+3	4	Florencia
+\.
+
+
+--
+-- TOC entry 4614 (class 0 OID 17073)
+-- Dependencies: 251
+-- Data for Name: observation; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.observation (id_observation, id_species, id_locality, id_collection) FROM stdin;
+1	1	1	1
+2	1	1	2
+3	1	1	3
+4	8	3	4
+\.
+
+
+--
+-- TOC entry 4595 (class 0 OID 16615)
+-- Dependencies: 232
+-- Data for Name: person; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.person (id_person, person_name, person_lastname) FROM stdin;
+1	DD	Larrea
+\.
+
+
+--
+-- TOC entry 4610 (class 0 OID 17032)
+-- Dependencies: 247
+-- Data for Name: person_role; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.person_role (id_person, id_role, is_active) FROM stdin;
+1	1	t
+\.
+
+
+--
+-- TOC entry 4589 (class 0 OID 16587)
+-- Dependencies: 226
+-- Data for Name: preservation_method; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.preservation_method (id_preservation_method, method_name) FROM stdin;
+1	Alcohol
+2	preservation_test_1
+3	preservation_test_2
+\.
+
+
+--
+-- TOC entry 4603 (class 0 OID 16693)
+-- Dependencies: 240
+-- Data for Name: province; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.province (id_province, id_country, province_name) FROM stdin;
+2	1	Chaco
+3	1	Corrientes
+4	1	Misiones
+5	1	Santa Fé
+\.
+
+
+--
+-- TOC entry 4609 (class 0 OID 17024)
+-- Dependencies: 246
+-- Data for Name: role; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.role (id_role, role_name) FROM stdin;
+1	COLLECTOR
+2	IDENTIFIER
+\.
+
+
+--
+-- TOC entry 4587 (class 0 OID 16561)
+-- Dependencies: 224
+-- Data for Name: species; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.species (id_species, id_genus, scientific_name) FROM stdin;
+1	1	Prionopelta punctulata
+2	2	Hypoponera sp1
+3	3	Octostruma balzani
+4	4	Solenopsis sp1
+8	8	Brachymyrmex sp1
+9	10	ccc
+\.
+
+
+--
+-- TOC entry 4581 (class 0 OID 16519)
+-- Dependencies: 218
+-- Data for Name: subfamily; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.subfamily (id_subfamily, id_family, scientific_name) FROM stdin;
+1	1	Amblyoponinae
+2	1	Ponerinae
+3	1	Myrmicinae
+5	1	subfamilia1
+6	1	Formicinae
+7	1	Ectatomminae
+8	1	aaa
+9	1	otro mas
+10	1	aaa
+11	16	ccc
+\.
+
+
+--
+-- TOC entry 4593 (class 0 OID 16606)
+-- Dependencies: 230
+-- Data for Name: trap; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.trap (id_trap, trap_name) FROM stdin;
+1	Winkler
+2	trap_name_1
+\.
+
+
+--
+-- TOC entry 4583 (class 0 OID 16533)
+-- Dependencies: 220
+-- Data for Name: tribe; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.tribe (id_tribe, id_subfamily, scientific_name) FROM stdin;
+1	1	Amblyoponini
+2	2	Ponerini
+3	3	Attini
+4	3	Solenopsidini
+6	5	tribu1
+7	2	tribu1
+8	2	tribu1
+9	2	tribu1
+10	1	tribu1
+11	1	tribu2
+12	6	Myrmelachistini
+13	11	ccc
+\.
+
+
+--
+-- TOC entry 4638 (class 0 OID 0)
+-- Dependencies: 248
+-- Name: collection_id_collection_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.collection_id_collection_seq', 4, true);
+
+
+--
+-- TOC entry 4639 (class 0 OID 0)
+-- Dependencies: 235
+-- Name: collector_id_collector_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.collector_id_collector_seq', 1, true);
+
+
+--
+-- TOC entry 4640 (class 0 OID 0)
+-- Dependencies: 237
+-- Name: country_id_country_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.country_id_country_seq', 6, true);
+
+
+--
+-- TOC entry 4641 (class 0 OID 0)
+-- Dependencies: 241
+-- Name: department_id_department_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.department_id_department_seq', 4, true);
+
+
+--
+-- TOC entry 4642 (class 0 OID 0)
+-- Dependencies: 227
+-- Name: environment_id_environment_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.environment_id_environment_seq', 1, true);
+
+
+--
+-- TOC entry 4643 (class 0 OID 0)
+-- Dependencies: 215
+-- Name: family_id_family_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.family_id_family_seq', 17, true);
+
+
+--
+-- TOC entry 4644 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: genus_id_genus_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.genus_id_genus_seq', 10, true);
+
+
+--
+-- TOC entry 4645 (class 0 OID 0)
+-- Dependencies: 233
+-- Name: identifier_id_identifier_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.identifier_id_identifier_seq', 1, true);
+
+
+--
+-- TOC entry 4646 (class 0 OID 0)
+-- Dependencies: 243
+-- Name: locality_id_locality_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.locality_id_locality_seq', 3, true);
+
+
+--
+-- TOC entry 4647 (class 0 OID 0)
+-- Dependencies: 250
+-- Name: observation_id_observation_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.observation_id_observation_seq', 4, true);
+
+
+--
+-- TOC entry 4648 (class 0 OID 0)
+-- Dependencies: 231
+-- Name: person_id_person_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.person_id_person_seq', 1, true);
+
+
+--
+-- TOC entry 4649 (class 0 OID 0)
+-- Dependencies: 225
+-- Name: preservation_method_id_preservation_method_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.preservation_method_id_preservation_method_seq', 3, true);
+
+
+--
+-- TOC entry 4650 (class 0 OID 0)
+-- Dependencies: 239
+-- Name: province_id_province_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.province_id_province_seq', 5, true);
+
+
+--
+-- TOC entry 4651 (class 0 OID 0)
+-- Dependencies: 245
+-- Name: role_id_role_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.role_id_role_seq', 2, true);
+
+
+--
+-- TOC entry 4652 (class 0 OID 0)
+-- Dependencies: 223
+-- Name: species_id_species_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.species_id_species_seq', 9, true);
+
+
+--
+-- TOC entry 4653 (class 0 OID 0)
+-- Dependencies: 217
+-- Name: subfamily_id_subfamily_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.subfamily_id_subfamily_seq', 11, true);
+
+
+--
+-- TOC entry 4654 (class 0 OID 0)
+-- Dependencies: 229
+-- Name: trap_id_trap_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.trap_id_trap_seq', 2, true);
+
+
+--
+-- TOC entry 4655 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: tribe_id_tribe_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.tribe_id_tribe_seq', 13, true);
+
+
+--
+-- TOC entry 4415 (class 2606 OID 17056)
+-- Name: collection pk_collection; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.collection
+    ADD CONSTRAINT pk_collection PRIMARY KEY (id_collection);
+
+
+--
+-- TOC entry 4401 (class 2606 OID 16645)
+-- Name: collector pk_collector; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.collector
+    ADD CONSTRAINT pk_collector PRIMARY KEY (id_collector);
+
+
+--
+-- TOC entry 4403 (class 2606 OID 16668)
+-- Name: country pk_country; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.country
+    ADD CONSTRAINT pk_country PRIMARY KEY (id_country);
+
+
+--
+-- TOC entry 4407 (class 2606 OID 16743)
+-- Name: department pk_department; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.department
+    ADD CONSTRAINT pk_department PRIMARY KEY (id_department);
+
+
+--
+-- TOC entry 4393 (class 2606 OID 16604)
+-- Name: environment pk_environment; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.environment
+    ADD CONSTRAINT pk_environment PRIMARY KEY (id_environment);
+
+
+--
+-- TOC entry 4381 (class 2606 OID 16517)
+-- Name: family pk_family; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.family
+    ADD CONSTRAINT pk_family PRIMARY KEY (id_family);
+
+
+--
+-- TOC entry 4387 (class 2606 OID 16554)
+-- Name: genus pk_genus; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.genus
+    ADD CONSTRAINT pk_genus PRIMARY KEY (id_genus);
+
+
+--
+-- TOC entry 4399 (class 2606 OID 16631)
+-- Name: identifier pk_identifier; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.identifier
+    ADD CONSTRAINT pk_identifier PRIMARY KEY (id_identifier);
+
+
+--
+-- TOC entry 4409 (class 2606 OID 16758)
+-- Name: locality pk_locality; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.locality
+    ADD CONSTRAINT pk_locality PRIMARY KEY (id_locality);
+
+
+--
+-- TOC entry 4417 (class 2606 OID 17078)
+-- Name: observation pk_observation; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.observation
+    ADD CONSTRAINT pk_observation PRIMARY KEY (id_observation);
+
+
+--
+-- TOC entry 4397 (class 2606 OID 16622)
+-- Name: person pk_person; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.person
+    ADD CONSTRAINT pk_person PRIMARY KEY (id_person);
+
+
+--
+-- TOC entry 4413 (class 2606 OID 17037)
+-- Name: person_role pk_person_role; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.person_role
+    ADD CONSTRAINT pk_person_role PRIMARY KEY (id_person, id_role);
+
+
+--
+-- TOC entry 4391 (class 2606 OID 16594)
+-- Name: preservation_method pk_preservation_method; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.preservation_method
+    ADD CONSTRAINT pk_preservation_method PRIMARY KEY (id_preservation_method);
+
+
+--
+-- TOC entry 4405 (class 2606 OID 16700)
+-- Name: province pk_province; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.province
+    ADD CONSTRAINT pk_province PRIMARY KEY (id_province);
+
+
+--
+-- TOC entry 4411 (class 2606 OID 17031)
+-- Name: role pk_role; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.role
+    ADD CONSTRAINT pk_role PRIMARY KEY (id_role);
+
+
+--
+-- TOC entry 4389 (class 2606 OID 16568)
+-- Name: species pk_species; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.species
+    ADD CONSTRAINT pk_species PRIMARY KEY (id_species);
+
+
+--
+-- TOC entry 4383 (class 2606 OID 16526)
+-- Name: subfamily pk_subfamily; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.subfamily
+    ADD CONSTRAINT pk_subfamily PRIMARY KEY (id_subfamily);
+
+
+--
+-- TOC entry 4395 (class 2606 OID 16613)
+-- Name: trap pk_trap; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.trap
+    ADD CONSTRAINT pk_trap PRIMARY KEY (id_trap);
+
+
+--
+-- TOC entry 4385 (class 2606 OID 16540)
+-- Name: tribe pk_tribe; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tribe
+    ADD CONSTRAINT pk_tribe PRIMARY KEY (id_tribe);
+
+
+--
+-- TOC entry 4429 (class 2606 OID 17057)
+-- Name: collection fk_collection_person; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.collection
+    ADD CONSTRAINT fk_collection_person FOREIGN KEY (id_person) REFERENCES public.person(id_person);
+
+
+--
+-- TOC entry 4430 (class 2606 OID 17062)
+-- Name: collection fk_collection_preservation_method; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.collection
+    ADD CONSTRAINT fk_collection_preservation_method FOREIGN KEY (id_preservation_method) REFERENCES public.preservation_method(id_preservation_method);
+
+
+--
+-- TOC entry 4431 (class 2606 OID 17067)
+-- Name: collection fk_collection_trap; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.collection
+    ADD CONSTRAINT fk_collection_trap FOREIGN KEY (id_trap) REFERENCES public.trap(id_trap);
+
+
+--
+-- TOC entry 4423 (class 2606 OID 16646)
+-- Name: collector fk_collector_person; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.collector
+    ADD CONSTRAINT fk_collector_person FOREIGN KEY (id_person) REFERENCES public.person(id_person);
+
+
+--
+-- TOC entry 4425 (class 2606 OID 16744)
+-- Name: department fk_department_province; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.department
+    ADD CONSTRAINT fk_department_province FOREIGN KEY (id_province) REFERENCES public.province(id_province);
+
+
+--
+-- TOC entry 4420 (class 2606 OID 16555)
+-- Name: genus fk_genus_tribe; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.genus
+    ADD CONSTRAINT fk_genus_tribe FOREIGN KEY (id_tribe) REFERENCES public.tribe(id_tribe);
+
+
+--
+-- TOC entry 4422 (class 2606 OID 16632)
+-- Name: identifier fk_identifier_person; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.identifier
+    ADD CONSTRAINT fk_identifier_person FOREIGN KEY (id_person) REFERENCES public.person(id_person);
+
+
+--
+-- TOC entry 4426 (class 2606 OID 16759)
+-- Name: locality fk_locality_department; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.locality
+    ADD CONSTRAINT fk_locality_department FOREIGN KEY (id_department) REFERENCES public.department(id_department);
+
+
+--
+-- TOC entry 4432 (class 2606 OID 17089)
+-- Name: observation fk_observation_collection; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.observation
+    ADD CONSTRAINT fk_observation_collection FOREIGN KEY (id_collection) REFERENCES public.collection(id_collection);
+
+
+--
+-- TOC entry 4433 (class 2606 OID 17084)
+-- Name: observation fk_observation_locality; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.observation
+    ADD CONSTRAINT fk_observation_locality FOREIGN KEY (id_locality) REFERENCES public.locality(id_locality);
+
+
+--
+-- TOC entry 4434 (class 2606 OID 17079)
+-- Name: observation fk_observation_species; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.observation
+    ADD CONSTRAINT fk_observation_species FOREIGN KEY (id_species) REFERENCES public.species(id_species);
+
+
+--
+-- TOC entry 4427 (class 2606 OID 17038)
+-- Name: person_role fk_person_role_person; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.person_role
+    ADD CONSTRAINT fk_person_role_person FOREIGN KEY (id_person) REFERENCES public.person(id_person);
+
+
+--
+-- TOC entry 4428 (class 2606 OID 17043)
+-- Name: person_role fk_person_role_role; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.person_role
+    ADD CONSTRAINT fk_person_role_role FOREIGN KEY (id_role) REFERENCES public.role(id_role);
+
+
+--
+-- TOC entry 4424 (class 2606 OID 16701)
+-- Name: province fk_province_country; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.province
+    ADD CONSTRAINT fk_province_country FOREIGN KEY (id_country) REFERENCES public.country(id_country);
+
+
+--
+-- TOC entry 4421 (class 2606 OID 16569)
+-- Name: species fk_species_genus; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.species
+    ADD CONSTRAINT fk_species_genus FOREIGN KEY (id_genus) REFERENCES public.genus(id_genus);
+
+
+--
+-- TOC entry 4418 (class 2606 OID 16527)
+-- Name: subfamily fk_subfamily_family; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.subfamily
+    ADD CONSTRAINT fk_subfamily_family FOREIGN KEY (id_family) REFERENCES public.family(id_family);
+
+
+--
+-- TOC entry 4419 (class 2606 OID 16541)
+-- Name: tribe fk_tribe_subfamily; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tribe
+    ADD CONSTRAINT fk_tribe_subfamily FOREIGN KEY (id_subfamily) REFERENCES public.subfamily(id_subfamily);
+
+
+-- Completed on 2024-11-19 01:55:32 -03
+
+--
+-- PostgreSQL database dump complete
+--
+
