@@ -1,0 +1,467 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 16.3
+-- Dumped by pg_dump version 16.3
+
+-- Started on 2024-11-19 01:42:08 -03
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 4612 (class 0 OID 17050)
+-- Dependencies: 249
+-- Data for Name: collection; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.collection (id_collection, id_person, id_preservation_method, id_trap, collection_date) FROM stdin;
+1	1	1	1	2023-07-11
+2	1	1	1	2024-08-09
+3	1	1	1	2024-08-20
+4	1	1	1	2024-10-09
+\.
+
+
+--
+-- TOC entry 4599 (class 0 OID 16638)
+-- Dependencies: 236
+-- Data for Name: collector; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.collector (id_collector, id_person, description) FROM stdin;
+1	1	colector profesional
+\.
+
+
+--
+-- TOC entry 4601 (class 0 OID 16661)
+-- Dependencies: 238
+-- Data for Name: country; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.country (id_country, country_name) FROM stdin;
+1	Argentina
+2	Brasil
+3	Uruguay
+4	Uruguay
+5	Chile
+6	Mexico
+\.
+
+
+--
+-- TOC entry 4605 (class 0 OID 16736)
+-- Dependencies: 242
+-- Data for Name: department; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.department (id_department, id_province, department_name) FROM stdin;
+1	2	Sargento Cabral
+2	3	Empedrado
+3	3	Itatí
+4	5	General Obligado
+\.
+
+
+--
+-- TOC entry 4591 (class 0 OID 16597)
+-- Dependencies: 228
+-- Data for Name: environment; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.environment (id_environment, environment_name) FROM stdin;
+1	Selva riparia
+\.
+
+
+--
+-- TOC entry 4579 (class 0 OID 16510)
+-- Dependencies: 216
+-- Data for Name: family; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.family (id_family, scientific_name) FROM stdin;
+1	Formicidae
+4	Nueva Familia 2
+5	familia2
+6	familia3
+7	jkhkjhkj
+8	femilia4
+9	femilia5
+10	asd
+11	nuevo
+12	test1
+13	otro as
+14	1
+15	bbb
+16	ccc
+17	antTest
+\.
+
+
+--
+-- TOC entry 4585 (class 0 OID 16547)
+-- Dependencies: 222
+-- Data for Name: genus; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.genus (id_genus, id_tribe, scientific_name) FROM stdin;
+1	1	Prionopelta
+2	2	Hypoponera
+3	3	Octostruma
+4	4	Solenopsis
+6	4	Nuevo Genero 1
+7	3	genero2
+8	12	Brachymyrmex
+9	9	jedj
+10	13	ccc
+\.
+
+
+--
+-- TOC entry 4597 (class 0 OID 16624)
+-- Dependencies: 234
+-- Data for Name: identifier; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.identifier (id_identifier, id_person, description) FROM stdin;
+1	1	dario el jefecito
+\.
+
+
+--
+-- TOC entry 4607 (class 0 OID 16751)
+-- Dependencies: 244
+-- Data for Name: locality; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.locality (id_locality, id_department, locality_name) FROM stdin;
+1	1	Estancia El Bagual
+2	2	Parada Coco
+3	4	Florencia
+\.
+
+
+--
+-- TOC entry 4614 (class 0 OID 17073)
+-- Dependencies: 251
+-- Data for Name: observation; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.observation (id_observation, id_species, id_locality, id_collection) FROM stdin;
+1	1	1	1
+2	1	1	2
+3	1	1	3
+4	8	3	4
+\.
+
+
+--
+-- TOC entry 4595 (class 0 OID 16615)
+-- Dependencies: 232
+-- Data for Name: person; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.person (id_person, person_name, person_lastname) FROM stdin;
+1	DD	Larrea
+\.
+
+
+--
+-- TOC entry 4610 (class 0 OID 17032)
+-- Dependencies: 247
+-- Data for Name: person_role; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.person_role (id_person, id_role, is_active) FROM stdin;
+1	1	t
+\.
+
+
+--
+-- TOC entry 4589 (class 0 OID 16587)
+-- Dependencies: 226
+-- Data for Name: preservation_method; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.preservation_method (id_preservation_method, method_name) FROM stdin;
+1	Alcohol
+2	preservation_test_1
+3	preservation_test_2
+\.
+
+
+--
+-- TOC entry 4603 (class 0 OID 16693)
+-- Dependencies: 240
+-- Data for Name: province; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.province (id_province, id_country, province_name) FROM stdin;
+2	1	Chaco
+3	1	Corrientes
+4	1	Misiones
+5	1	Santa Fé
+\.
+
+
+--
+-- TOC entry 4609 (class 0 OID 17024)
+-- Dependencies: 246
+-- Data for Name: role; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.role (id_role, role_name) FROM stdin;
+1	COLLECTOR
+2	IDENTIFIER
+\.
+
+
+--
+-- TOC entry 4587 (class 0 OID 16561)
+-- Dependencies: 224
+-- Data for Name: species; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.species (id_species, id_genus, scientific_name) FROM stdin;
+1	1	Prionopelta punctulata
+2	2	Hypoponera sp1
+3	3	Octostruma balzani
+4	4	Solenopsis sp1
+8	8	Brachymyrmex sp1
+9	10	ccc
+\.
+
+
+--
+-- TOC entry 4581 (class 0 OID 16519)
+-- Dependencies: 218
+-- Data for Name: subfamily; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.subfamily (id_subfamily, id_family, scientific_name) FROM stdin;
+1	1	Amblyoponinae
+2	1	Ponerinae
+3	1	Myrmicinae
+5	1	subfamilia1
+6	1	Formicinae
+7	1	Ectatomminae
+8	1	aaa
+9	1	otro mas
+10	1	aaa
+11	16	ccc
+\.
+
+
+--
+-- TOC entry 4593 (class 0 OID 16606)
+-- Dependencies: 230
+-- Data for Name: trap; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.trap (id_trap, trap_name) FROM stdin;
+1	Winkler
+2	trap_name_1
+\.
+
+
+--
+-- TOC entry 4583 (class 0 OID 16533)
+-- Dependencies: 220
+-- Data for Name: tribe; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.tribe (id_tribe, id_subfamily, scientific_name) FROM stdin;
+1	1	Amblyoponini
+2	2	Ponerini
+3	3	Attini
+4	3	Solenopsidini
+6	5	tribu1
+7	2	tribu1
+8	2	tribu1
+9	2	tribu1
+10	1	tribu1
+11	1	tribu2
+12	6	Myrmelachistini
+13	11	ccc
+\.
+
+
+--
+-- TOC entry 4638 (class 0 OID 0)
+-- Dependencies: 248
+-- Name: collection_id_collection_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.collection_id_collection_seq', 4, true);
+
+
+--
+-- TOC entry 4639 (class 0 OID 0)
+-- Dependencies: 235
+-- Name: collector_id_collector_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.collector_id_collector_seq', 1, true);
+
+
+--
+-- TOC entry 4640 (class 0 OID 0)
+-- Dependencies: 237
+-- Name: country_id_country_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.country_id_country_seq', 6, true);
+
+
+--
+-- TOC entry 4641 (class 0 OID 0)
+-- Dependencies: 241
+-- Name: department_id_department_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.department_id_department_seq', 4, true);
+
+
+--
+-- TOC entry 4642 (class 0 OID 0)
+-- Dependencies: 227
+-- Name: environment_id_environment_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.environment_id_environment_seq', 1, true);
+
+
+--
+-- TOC entry 4643 (class 0 OID 0)
+-- Dependencies: 215
+-- Name: family_id_family_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.family_id_family_seq', 17, true);
+
+
+--
+-- TOC entry 4644 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: genus_id_genus_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.genus_id_genus_seq', 10, true);
+
+
+--
+-- TOC entry 4645 (class 0 OID 0)
+-- Dependencies: 233
+-- Name: identifier_id_identifier_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.identifier_id_identifier_seq', 1, true);
+
+
+--
+-- TOC entry 4646 (class 0 OID 0)
+-- Dependencies: 243
+-- Name: locality_id_locality_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.locality_id_locality_seq', 3, true);
+
+
+--
+-- TOC entry 4647 (class 0 OID 0)
+-- Dependencies: 250
+-- Name: observation_id_observation_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.observation_id_observation_seq', 4, true);
+
+
+--
+-- TOC entry 4648 (class 0 OID 0)
+-- Dependencies: 231
+-- Name: person_id_person_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.person_id_person_seq', 1, true);
+
+
+--
+-- TOC entry 4649 (class 0 OID 0)
+-- Dependencies: 225
+-- Name: preservation_method_id_preservation_method_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.preservation_method_id_preservation_method_seq', 3, true);
+
+
+--
+-- TOC entry 4650 (class 0 OID 0)
+-- Dependencies: 239
+-- Name: province_id_province_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.province_id_province_seq', 5, true);
+
+
+--
+-- TOC entry 4651 (class 0 OID 0)
+-- Dependencies: 245
+-- Name: role_id_role_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.role_id_role_seq', 2, true);
+
+
+--
+-- TOC entry 4652 (class 0 OID 0)
+-- Dependencies: 223
+-- Name: species_id_species_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.species_id_species_seq', 9, true);
+
+
+--
+-- TOC entry 4653 (class 0 OID 0)
+-- Dependencies: 217
+-- Name: subfamily_id_subfamily_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.subfamily_id_subfamily_seq', 11, true);
+
+
+--
+-- TOC entry 4654 (class 0 OID 0)
+-- Dependencies: 229
+-- Name: trap_id_trap_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.trap_id_trap_seq', 2, true);
+
+
+--
+-- TOC entry 4655 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: tribe_id_tribe_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.tribe_id_tribe_seq', 13, true);
+
+
+-- Completed on 2024-11-19 01:42:08 -03
+
+--
+-- PostgreSQL database dump complete
+--
+
