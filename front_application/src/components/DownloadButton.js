@@ -4,7 +4,7 @@ import axios from 'axios';
 const DownloadButton = () => {
     const handleDownload = async () => {
         try {
-            const response = await axios.get('/api/download_observations_csv', {
+            const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/download_observations_csv`, {
                 responseType: 'blob',
             });
             const url = window.URL.createObjectURL(new Blob([response.data]));

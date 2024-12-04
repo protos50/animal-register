@@ -29,7 +29,7 @@ const CollectionTables = () => {
     };
 
     const handleAddRecord = (newRecord) => {
-        axios.post(`/api/${selectedTable}`, newRecord)
+        axios.post(`${process.env.REACT_APP_API_BASE_URL}/${selectedTable}`, newRecord)
           .then(response => {
             console.log(`Added new ${selectedTable.slice(0, -1)}:`, response.data);
             alert(`Successfully added new ${selectedTable.slice(0, -1)}!`);

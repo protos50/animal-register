@@ -31,7 +31,7 @@ const Observations = () => {
     const limit = rowsPerPage;
 
     try {
-      const response = await axios.get(`/api/observations?limit=${limit}&offset=${offset}`);
+      const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/observations?limit=${limit}&offset=${offset}`);
       setObservations(response.data);
       // Asegúrate de configurar el total de filas para la paginación
       // setTotalRows(parseInt(response.headers['x-total-count'], 10)); // Obtén esto del encabezado de la respuesta

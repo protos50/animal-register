@@ -5,7 +5,7 @@ const TableView = ({ table }) => {
     const [data, setData] = useState([]);
 
     useEffect(() => {
-        axios.get(`/api/${table}`)
+        axios.get(`${process.env.REACT_APP_API_BASE_URL}/${table}`)
             .then(response => setData(response.data))
             .catch(error => console.error(`Error fetching ${table}:`, error));
     }, [table]);

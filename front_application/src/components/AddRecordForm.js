@@ -29,7 +29,7 @@ const AddRecordForm = ({ table, relatedTable, onSubmit }) => {
     useEffect(() => {
         if (relatedTable) {
             console.log(`Fetching data for related table: ${relatedTable}`);
-            axios.get(`/api/${relatedTable}`)
+            axios.get(`${process.env.REACT_APP_API_BASE_URL}/${relatedTable}`)
                 .then(response => {
                     console.log(`Received data for ${relatedTable}:`, response.data);
                     setRelatedData(response.data);

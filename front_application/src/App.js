@@ -30,13 +30,13 @@ const Content = styled('main')(({ theme }) => ({
 const App = () => {
   return (
     <ThemeProvider theme={theme}>
-      <Router>
+      <Router basename="/ants">
         <Root>
           <CssBaseline />
           <StyledDrawer variant="permanent">
             <Box sx={theme.mixins.toolbar} />
             <List>
-            <ListItemButton button component={Link} to="/">
+              <ListItemButton button component={Link} to="/">
                 <ListItemText primary="Home" />
               </ListItemButton>
               <ListItemButton button component={Link} to="/observations">
@@ -58,7 +58,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Welcome />} />
               <Route path="/observations" element={<Observations />} />
-              <Route path="/download-observations-csv" element={<DownloadButton />} /> 
+              <Route path="/download-observations-csv" element={<DownloadButton />} />
               <Route path="/create-observation" element={<CreateObservationForm />} />
               <Route path="/manage-tables" element={<ManageTables />} />
             </Routes>

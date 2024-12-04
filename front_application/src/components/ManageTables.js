@@ -35,7 +35,7 @@ const ManageTables = () => {
       {activeTable === 'collection' && <CollectionTables />}
     </div>
   );
-  
+
   };
 
 export default ManageTables;

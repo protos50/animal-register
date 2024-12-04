@@ -15,7 +15,7 @@ const CreateObservationForm = () => {
     const [collectionDate, setCollectionDate] = useState('');
 
     useEffect(() => {
-        axios.get('/api/simple_species')
+        axios.get(`${process.env.REACT_APP_API_BASE_URL}/simple_species`)
             .then(response => {
                 setSpecies(response.data);
             })
@@ -23,7 +23,7 @@ const CreateObservationForm = () => {
                 console.error("Error fetching species:", error);
             });
 
-        axios.get('/api/simple_localities')
+        axios.get(`${process.env.REACT_APP_API_BASE_URL}/simple_localities`)
             .then(response => {
                 setLocalities(response.data);
             })
@@ -31,7 +31,7 @@ const CreateObservationForm = () => {
                 console.error("Error fetching localities:", error);
             });
 
-        axios.get('/api/preservation_methods')
+        axios.get(`${process.env.REACT_APP_API_BASE_URL}/preservation_methods`)
             .then(response => {
                 setPreservationMethods(response.data);
             })
@@ -39,7 +39,7 @@ const CreateObservationForm = () => {
                 console.error("Error fetching preservation methods:", error);
             });
 
-        axios.get('/api/traps')
+        axios.get(`${process.env.REACT_APP_API_BASE_URL}/traps`)
             .then(response => {
                 setTraps(response.data);
             })
@@ -47,7 +47,7 @@ const CreateObservationForm = () => {
                 console.error("Error fetching traps:", error);
             });
 
-        axios.get('/api/people')
+        axios.get(`${process.env.REACT_APP_API_BASE_URL}/people`)
             .then(response => {
                 setPeople(response.data);
             })
@@ -99,7 +99,7 @@ const CreateObservationForm = () => {
         };
 
         // Realizar la solicitud POST para crear la nueva observación
-        axios.post('/api/observations', newObservation)
+        axios.post(`${process.env.REACT_APP_API_BASE_URL}/observations`, newObservation)
             .then(response => {
                 alert("Observation created successfully!");
             })
